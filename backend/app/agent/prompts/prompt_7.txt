@@ -1,0 +1,62 @@
+Analyze the following code extract and its vulnerability:
+
+File: C:/Users/SRISAYEE/AppData/Local/Temp/tmpt3kv33ar/uploaded/vuln_node.js
+Lines: 0 to 0
+
+Vulnerability Description: The application might dynamically evaluate untrusted input, which can lead to a code injection vulnerability. An attacker can execute arbitrary code, potentially gaining complete control of the system. To prevent this vulnerability, avoid executing code containing user input. If this is unavoidable, validate and sanitize the input, and use safe alternatives for evaluating user input.
+
+Full File Code:
+// vuln_node.js
+// Run: npm init -y && npm i express
+const express = require("express");
+const { exec } = require("child_process");
+
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Simple page that reflects the query param (reflected XSS)
+app.get("/", (req, res) => {
+  const name = req.query.name || "guest";
+  // Reflected XSS: unsanitized user input printed into HTML
+  res.send(`<html><body><h1>Hi ${name}</h1></body></html>`);
+});
+
+app.post("/shell", (req, res) => {
+  const cmd = req.body.cmd || "echo ok";
+  // Dangerous: using user input directly in exec -> command injection
+  exec(cmd, (err, stdout, stderr) => {
+    if (err) {
+      return res.status(500).send("error");
+    }
+    res.send({ out: stdout });
+  });
+});
+
+app.post("/calc", (req, res) => {
+  const code = req.body.code || "1+1";
+  // Very unsafe: eval on user provided code
+  try {
+    const result = eval(code);
+    res.json({ result });
+  } catch (e) {
+    res.status(400).send("bad code");
+  }
+});
+
+app.listen(3000, () => console.log("vuln app on :3000"));
+TASK:
+- Confirm if the vulnerability exists at the mentioned location.
+- Compare the entire file's logic with and without the vulnerability.
+- Update the code to remove the vulnerability while preserving the logic of the file.
+- After modification, ensure the main code logic still works and the vulnerability is removed.
+- Do NOT introduce new features or change other logic. Only resolve the specified vulnerability.
+- CRITICAL: Respond with ONLY the full, updated contents of the Python file as valid code.
+- ABSOLUTELY NO markdown code fences (``````python), or triple quotes (''').
+- NO explanations, wrappers, or additional text BEFORE or AFTER the code.
+- At the VERY END of the file ONLY, append this exact Python comment block:
+  # AGENT FIX SUMMARY:
+  # Vulnerability fixed: [brief description]
+  # Changes made: [brief changes]
+  # Logic preserved: [why original logic works]
+- Your response must be parseable Python code from line 1 to final comment.
