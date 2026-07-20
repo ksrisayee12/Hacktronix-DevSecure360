@@ -1,39 +1,35 @@
+"""
+DevSecure360 — FastAPI Backend
+Phase 0: Clean skeleton. No Bandit, Semgrep, or ZAP. Real engines wired in per phase.
+"""
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-import os, tempfile, shutil, zipfile
-
 from pydantic import BaseModel
+from dotenv import load_dotenv
+import os, tempfile, shutil, zipfile, uuid
+from datetime import datetime
 
-from app.scanner.code_scanner import run_bandit_scan, run_semgrep_scan, standardize_code_results
-from app.scanner.external_scanner import trigger_zap_scan, parse_zap_alerts
-from app.utils.aggregator import compute_score
+from app.shared.types import ScanResult, ScanStatus, ScanType, Finding, Severity
 from app.database.history_db import save_scan_result, get_scan_history
+from app.utils.aggregator import compute_score
 
-# NEW: import the agent pipeline
-from app.agent.agent import main as run_agent_pipeline
-
+# Phase 1: from app.scanner.sast.engine import SASTEngine
+# Phase 3: from app.scanner.port.scanner import PortScanner
+# Phase 4: from app.scanner.secrets.scanner import SecretScanner
+# Phase 5: from app.scanner.dast.engine import DASTEngine
 
 load_dotenv()
-app = FastAPI(title=os.getenv("APP_NAME", "DevSecure360"))
 
-origins_raw = os.getenv("CORS_ORIGINS", "http://localhost:3000")
-origins = [o.strip() for o in origins_raw.split(",") if o.strip()]
-if not origins:
-    origins = ["*"]
+app = FastAPI(title=os.getenv("APP_NAME", "DevSecure360"), version="0.1.0")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()] or ["*"]
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 
 @app.get("/")
 def root():
-    return {"msg": "DevSecure360 API online"}
+    return {"app": "DevSecure360", "status": "online", "version": "0.1.0"}
 
 
 @app.post("/scan/code")
@@ -54,38 +50,43 @@ async def scan_code(file: UploadFile = File(...)):
             shutil.move(path, os.path.join(target_dir, os.path.basename(path)))
             target = target_dir
 
-        bandit_json = run_bandit_scan(target)
-        semgrep_json = run_semgrep_scan(target)
+        # Phase 1: result = SASTEngine().scan(target_path=target)
+        result = _stub_result(ScanType.SAST, target)
 
-        findings = standardize_code_results(bandit_json, semgrep_json)
-
-        score = compute_score(findings)
-
-        result = {"findings": findings, "score": score}
-        save_scan_result("code", result)
-        return result
+        save_scan_result("sast", {"findings": result.findings, "score": result.score})
+        return {"scan_id": result.scan_id, "status": result.status, "findings": [_f(f) for f in result.findings], "score": result.score}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    # finally:
-    #     shutil.rmtree(tmpdir, ignore_errors=True)
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 class ExternalScanRequest(BaseModel):
     url: str
 
-
 @app.post("/scan/external")
 def scan_external(request: ExternalScanRequest):
-    url = request.url
     try:
-        zap_resp = trigger_zap_scan(url)
-        findings = parse_zap_alerts(zap_resp)
-        score = compute_score(findings)
+        # Phase 5: result = DASTEngine().scan(target_url=request.url)
+        result = _stub_result(ScanType.DAST, request.url)
+        save_scan_result("dast", {"findings": result.findings, "score": result.score})
+        return {"scan_id": result.scan_id, "status": result.status, "findings": [_f(f) for f in result.findings], "score": result.score}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-        result = {"findings": findings, "score": score}
-        save_scan_result("external", result)
-        return result
+
+class PortScanRequest(BaseModel):
+    host: str
+    port_range: str = "1-1024"
+
+@app.post("/scan/port")
+def scan_port(request: PortScanRequest):
+    try:
+        # Phase 3: result = PortScanner().scan(host=request.host, port_range=request.port_range)
+        result = _stub_result(ScanType.PORT, request.host)
+        save_scan_result("port", {"findings": result.findings, "score": result.score})
+        return {"scan_id": result.scan_id, "status": result.status, "findings": [_f(f) for f in result.findings], "score": result.score}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -95,17 +96,43 @@ def history():
     return {"history": get_scan_history()}
 
 
-# NEW: endpoint to run the agent pipeline after a code scan
-@app.post("/agent/run")
-def run_agent():
-    """
-    Trigger the full agent pipeline:
-    - normalize latest scan history
-    - build prompts
-    - call Gemini to patch vulnerable files
-    """
-    try:
-        run_agent_pipeline()
-        return {"status": "ok", "message": "Agent pipeline completed successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Agent pipeline failed: {e}")
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+def _stub_result(scan_type: ScanType, target: str) -> ScanResult:
+    """Placeholder result used until each engine is wired in."""
+    return ScanResult(
+        scan_id=str(uuid.uuid4()),
+        scan_type=scan_type,
+        status=ScanStatus.COMPLETED,
+        target=target,
+        findings=[],
+        score={"score": 100, "grade": "A", "counts": {"Critical": 0, "High": 0, "Medium": 0, "Low": 0}, "max_cvss": 0},
+        started_at=datetime.utcnow().isoformat(),
+        completed_at=datetime.utcnow().isoformat(),
+        error=None
+    )
+
+
+def _f(f: Finding) -> dict:
+    """Convert Finding dataclass to JSON-serializable dict."""
+    if isinstance(f, dict):
+        return f
+    return {
+        "id": f.id,
+        "rule_id": f.rule_id,
+        "vuln_class": f.vuln_class,
+        "scan_type": f.scan_type.value if hasattr(f.scan_type, "value") else f.scan_type,
+        "file": f.file,
+        "line": f.line,
+        "url": f.url,
+        "severity": f.severity.value if hasattr(f.severity, "value") else f.severity,
+        "confidence": f.confidence,
+        "cwe": f.cwe,
+        "owasp": f.owasp,
+        "issue": f.issue,
+        "description": f.description,
+        "evidence": f.evidence,
+        "taint_trace": [{"step": t.step, "line": t.line, "file": t.file, "description": t.description} for t in f.taint_trace] if f.taint_trace else [],
+        "remediation": f.remediation,
+        "tool": f.tool,
+    }

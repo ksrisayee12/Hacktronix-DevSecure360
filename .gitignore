@@ -17,4 +17,6 @@ build/
 .vscode/
 
 \scan_history.json
-backend/.env
+.env
+backend/.env.txt
+.env.example

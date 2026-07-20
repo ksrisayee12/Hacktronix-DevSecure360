@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, ResponsiveContainer, CartesianGrid,} from "recharts";
+import API_BASE from "../config";
 
 const COLORS = ["#555879", "#98A1BC", "#DED3C4", "#F4EBD3"];
 
@@ -50,7 +51,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const res = await fetch("http://localhost:8000/history");
+        const res = await fetch(`${API_BASE}/history`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setScanHistory(Array.isArray(data.history) ? data.history : []);
