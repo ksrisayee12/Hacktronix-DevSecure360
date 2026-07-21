@@ -1,0 +1,18 @@
+rule_id: php_danger_002
+vuln_class: Variable Overwrite
+severity: High
+issue: 'PHP: Variable Overwrite via parse_str() (CWE-94)'
+cwe: CWE-473
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- parse_str(
+sanitizers: []
+remediation: Avoid parse_str( with user-controlled input. Use validated allowlists.

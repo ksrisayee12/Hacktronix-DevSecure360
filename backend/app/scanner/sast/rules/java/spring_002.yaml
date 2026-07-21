@@ -1,0 +1,22 @@
+rule_id: java_spring_002
+vuln_class: Framework Misconfiguration
+severity: Critical
+issue: 'Spring Boot: SpEL getValue (CWE-284)'
+cwe: CWE-284
+sources:
+- request.getParameter
+- request.getHeader
+- request.getCookies
+- request.getInputStream
+- request.getReader
+- request.getQueryString
+- request.getPathInfo
+- request.getRemoteUser
+- httpRequest.getParameter
+- getParameter
+- getHeader
+- getQueryString
+sinks:
+- spelExpression.getValue(
+sanitizers: []
+remediation: 'Remediate Spring Security misconfiguration: SpEL getValue'

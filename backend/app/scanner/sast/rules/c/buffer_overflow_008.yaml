@@ -1,0 +1,21 @@
+rule_id: c_buffer_overflow_008
+vuln_class: Buffer Overflow
+severity: Critical
+issue: Potential buffer overflow via recv( (CWE-119)
+cwe: CWE-119
+sources:
+- argv
+- getenv
+- recv
+- read
+- fread
+- fgets
+- scanf
+- fscanf
+- sscanf
+- gets
+sinks:
+- recv(
+sanitizers: []
+remediation: Validate the size argument to recv(. Ensure destination buffer is large
+  enough.

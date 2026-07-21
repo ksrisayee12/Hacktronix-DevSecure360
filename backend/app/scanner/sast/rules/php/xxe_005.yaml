@@ -1,0 +1,21 @@
+rule_id: php_xxe_005
+vuln_class: XXE
+severity: High
+issue: XXE via xml_parse (CWE-611)
+cwe: CWE-611
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- xml_parse(
+sanitizers:
+- LIBXML_NONET
+- LIBXML_DTDLOAD
+remediation: 'Disable external entity loading: libxml_disable_entity_loader(true)
+  or LIBXML_NONET flag.'

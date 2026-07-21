@@ -1,0 +1,11 @@
+rule_id: js_crypto_weak_004
+vuln_class: Weak Crypto
+severity: Medium
+issue: 'Weak/Insecure cryptography: SHA-1 (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- crypto.createHash("sha1")
+sanitizers: []
+remediation: Replace SHA-1 with a strong algorithm. Use crypto.randomBytes() instead
+  of Math.random().

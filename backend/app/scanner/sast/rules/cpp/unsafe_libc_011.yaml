@@ -1,0 +1,14 @@
+rule_id: c_unsafe_libc_011
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: mktemp( mktemp() has TOCTOU race condition (CWE-377)'
+cwe: CWE-377
+sources: []
+sinks:
+- mktemp(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace mktemp( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

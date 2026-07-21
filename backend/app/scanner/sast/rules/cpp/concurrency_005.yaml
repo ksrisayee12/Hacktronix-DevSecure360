@@ -1,0 +1,10 @@
+rule_id: c_concurrency_005
+vuln_class: Race Condition
+severity: Medium
+issue: 'Concurrency issue via stat(: TOCTOU race: stat() then open() (CWE-362)'
+cwe: CWE-362
+sources: []
+sinks:
+- stat(
+sanitizers: []
+remediation: Use RAII locking. Replace stat( TOCTOU pattern with atomic file operations.

@@ -1,0 +1,24 @@
+rule_id: java_xxe_003
+vuln_class: XXE
+severity: High
+issue: XXE via XMLInputFactory (StAX) (CWE-611)
+cwe: CWE-611
+sources:
+- request.getParameter
+- request.getHeader
+- request.getCookies
+- request.getInputStream
+- request.getReader
+- request.getQueryString
+- request.getPathInfo
+- request.getRemoteUser
+- httpRequest.getParameter
+- getParameter
+- getHeader
+- getQueryString
+sinks:
+- XMLInputFactory.newInstance(
+sanitizers:
+- setFeature(XMLConstants.FEATURE_SECURE_PROCESSING
+- setExpandEntityReferences(false
+remediation: Disable external entity processing on XMLInputFactory (StAX). Set FEATURE_SECURE_PROCESSING=true.

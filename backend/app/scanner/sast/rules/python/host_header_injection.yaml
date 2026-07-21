@@ -5,6 +5,9 @@ issue: Host Header Injection (CWE-644)
 cwe: CWE-644
 sources:
 - request.host
+- request.headers.get('Host'
 sinks:
-- redirect
-- url_for
+- redirect(
+- url_for(
+sanitizers: []
+remediation: Validate Host header against a whitelist. Use absolute URLs from configuration.

@@ -1,0 +1,23 @@
+rule_id: php_wp_003
+vuln_class: XSS
+severity: High
+issue: 'WordPress: WordPress unescaped content (CWE-89 / CWE-79)'
+cwe: CWE-89
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- the_content(
+sanitizers:
+- esc_html(
+- esc_attr(
+- sanitize_text_field(
+- wpdb->prepare(
+remediation: 'Use the_content( with proper sanitization: wpdb->prepare() for SQL,
+  esc_html() for output.'

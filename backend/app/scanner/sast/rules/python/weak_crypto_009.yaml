@@ -1,0 +1,11 @@
+rule_id: python_weak_crypto_009
+vuln_class: Weak Crypto
+severity: Medium
+issue: Use of Broken Algorithm DES (CWE-327)
+cwe: CWE-327
+sources: []
+sinks:
+- DES.new
+sanitizers: []
+remediation: 'Replace DES with a modern algorithm: SHA-256/SHA-3 for hashing, AES-256-GCM
+  for encryption.'

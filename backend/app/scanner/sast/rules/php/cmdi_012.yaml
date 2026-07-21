@@ -1,0 +1,21 @@
+rule_id: php_cmdi_012
+vuln_class: CMDi
+severity: Critical
+issue: Command Injection via create_function() (CWE-78)
+cwe: CWE-78
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- create_function(
+sanitizers:
+- escapeshellarg(
+- escapeshellcmd(
+remediation: Never use create_function() with user input. Use escapeshellarg() if
+  shell execution is necessary.

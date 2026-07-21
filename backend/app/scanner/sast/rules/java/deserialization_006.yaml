@@ -1,0 +1,26 @@
+rule_id: java_deser_006
+vuln_class: Deserialization
+severity: Critical
+issue: Insecure Deserialization via Jackson polymorphic (CWE-502)
+cwe: CWE-502
+sources:
+- request.getParameter
+- request.getHeader
+- request.getCookies
+- request.getInputStream
+- request.getReader
+- request.getQueryString
+- request.getPathInfo
+- request.getRemoteUser
+- httpRequest.getParameter
+- getParameter
+- getHeader
+- getQueryString
+sinks:
+- Jackson.readValue(
+sanitizers:
+- ObjectInputFilter
+- SerialKiller
+- ValidatingObjectInputStream
+remediation: Implement input filtering for Jackson polymorphic. Use SerialKiller or
+  Apache Commons IO's ValidatingObjectInputStream.

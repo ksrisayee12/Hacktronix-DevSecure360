@@ -1,0 +1,10 @@
+rule_id: cpp_specific_010
+vuln_class: Memory Corruption
+severity: Medium
+issue: 'C++ specific: strcpy in C++ — prefer std::string (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- strcpy(
+sanitizers: []
+remediation: 'Address C++ specific issue: strcpy in C++ — prefer std::string'

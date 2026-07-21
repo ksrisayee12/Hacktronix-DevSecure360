@@ -1,0 +1,26 @@
+rule_id: js_proto_poll_004
+vuln_class: Prototype Pollution
+severity: High
+issue: Prototype Pollution via $.extend( (CWE-1321)
+cwe: CWE-1321
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- $.extend(
+sanitizers:
+- Object.create(null)
+- hasOwnProperty
+remediation: Use Object.create(null) for safe merging. Freeze prototypes with Object.freeze().

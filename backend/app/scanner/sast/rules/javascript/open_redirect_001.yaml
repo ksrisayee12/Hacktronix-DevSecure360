@@ -1,0 +1,24 @@
+rule_id: js_redirect_001
+vuln_class: Open Redirect
+severity: Medium
+issue: Open Redirect via res.redirect( (CWE-601)
+cwe: CWE-601
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- res.redirect(
+sanitizers: []
+remediation: Validate redirect URLs against a whitelist of trusted domains.

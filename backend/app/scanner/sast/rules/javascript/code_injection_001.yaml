@@ -1,0 +1,25 @@
+rule_id: js_code_inject_001
+vuln_class: Code Injection
+severity: Critical
+issue: Code Injection via eval( (CWE-94)
+cwe: CWE-94
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- eval(
+sanitizers: []
+remediation: Never pass user input to eval() or Function(). Use JSON.parse() for data
+  parsing.

@@ -1,0 +1,11 @@
+rule_id: python_flask_debug_001
+vuln_class: Misconfiguration
+severity: High
+issue: Flask app.run(debug=True) in production (CWE-489)
+cwe: CWE-489
+sources: []
+sinks:
+- debug=True
+- debug = True
+sanitizers: []
+remediation: Remove debug=True from app.run(). Use FLASK_DEBUG environment variable.

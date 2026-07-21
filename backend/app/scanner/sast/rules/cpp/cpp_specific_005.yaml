@@ -1,0 +1,10 @@
+rule_id: cpp_specific_005
+vuln_class: Memory Corruption
+severity: Medium
+issue: 'C++ specific: Deprecated auto_ptr — use unique_ptr (CWE-772)'
+cwe: CWE-772
+sources: []
+sinks:
+- std::auto_ptr
+sanitizers: []
+remediation: 'Address C++ specific issue: Deprecated auto_ptr — use unique_ptr'

@@ -1,0 +1,14 @@
+rule_id: c_unsafe_libc_015
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: wcscat( wcscat() is unsafe wide-char variant (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- wcscat(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace wcscat( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

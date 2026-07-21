@@ -1,0 +1,25 @@
+rule_id: js_ssti_003
+vuln_class: SSTI
+severity: Critical
+issue: Server-Side Template Injection via Handlebars (CWE-1336)
+cwe: CWE-1336
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- handlebars.compile(
+sanitizers: []
+remediation: Never render user input as a Handlebars template. Use static templates
+  with escaped variables.

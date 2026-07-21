@@ -1,0 +1,11 @@
+rule_id: js_crypto_weak_008
+vuln_class: Weak Crypto
+severity: Medium
+issue: 'Weak/Insecure cryptography: RC4 (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- crypto.createCipheriv('rc4
+sanitizers: []
+remediation: Replace RC4 with a strong algorithm. Use crypto.randomBytes() instead
+  of Math.random().

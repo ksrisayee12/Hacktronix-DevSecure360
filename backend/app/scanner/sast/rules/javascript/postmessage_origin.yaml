@@ -1,0 +1,13 @@
+rule_id: js_postmessage_001
+vuln_class: Message Origin Validation
+severity: High
+issue: Unsafe postMessage without origin check (CWE-346)
+cwe: CWE-346
+sources:
+- window.addEventListener('message'
+sinks:
+- event.data
+sanitizers:
+- event.origin ===
+- trustedOrigins
+remediation: Always validate event.origin before processing postMessage data.

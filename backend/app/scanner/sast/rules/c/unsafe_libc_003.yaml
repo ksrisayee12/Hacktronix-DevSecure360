@@ -1,0 +1,15 @@
+rule_id: c_unsafe_libc_003
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: gets( gets() is banned — always causes buffer overflow
+  (CWE-242)'
+cwe: CWE-242
+sources: []
+sinks:
+- gets(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace gets( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

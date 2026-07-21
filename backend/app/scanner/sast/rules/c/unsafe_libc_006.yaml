@@ -1,0 +1,15 @@
+rule_id: c_unsafe_libc_006
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: scanf( scanf() without field width — reads unlimited input
+  (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- scanf(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace scanf( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

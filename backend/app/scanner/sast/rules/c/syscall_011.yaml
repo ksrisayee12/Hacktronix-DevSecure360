@@ -1,0 +1,23 @@
+rule_id: c_syscall_011
+vuln_class: CMDi
+severity: Critical
+issue: 'Dangerous syscall: chown( chown() with user-controlled arguments (CWE-78)'
+cwe: CWE-78
+sources:
+- argv
+- getenv
+- recv
+- read
+- fread
+- fgets
+- scanf
+- fscanf
+- sscanf
+- gets
+sinks:
+- chown(
+sanitizers:
+- execve(
+- const char *const argv[]
+remediation: Validate all arguments to chown(. Use allowlists and never pass user
+  input directly.

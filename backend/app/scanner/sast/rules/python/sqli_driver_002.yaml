@@ -1,0 +1,25 @@
+rule_id: python_sqli_driver_002
+vuln_class: SQLi
+severity: Critical
+issue: SQL Injection via psycopg2 driver (CWE-89)
+cwe: CWE-89
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- psycopg2.connect
+sanitizers: []
+remediation: Use parameterized queries with psycopg2. Never format SQL with user data.

@@ -1,10 +1,14 @@
 rule_id: js_buffer_001
 vuln_class: Memory Disclosure
 severity: High
-issue: Unsafe Buffer Allocation (CWE-119)
+issue: Unsafe Buffer.allocUnsafe() or new Buffer() (CWE-119)
 cwe: CWE-119
-sources:
-- req.query
+sources: []
 sinks:
-- new Buffer
-- Buffer.allocUnsafe
+- new Buffer(
+- Buffer.allocUnsafe(
+sanitizers:
+- Buffer.alloc(
+- Buffer.from(
+remediation: Use Buffer.alloc() which zero-fills memory, or Buffer.from() for existing
+  data.

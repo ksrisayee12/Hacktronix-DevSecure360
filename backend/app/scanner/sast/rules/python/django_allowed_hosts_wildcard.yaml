@@ -1,0 +1,11 @@
+rule_id: python_django_hosts_001
+vuln_class: Misconfiguration
+severity: High
+issue: Django ALLOWED_HOSTS = ['*'] (CWE-183)
+cwe: CWE-183
+sources: []
+sinks:
+- ALLOWED_HOSTS = ['*']
+- ALLOWED_HOSTS=['*']
+sanitizers: []
+remediation: Set ALLOWED_HOSTS to specific domain names, not wildcard.

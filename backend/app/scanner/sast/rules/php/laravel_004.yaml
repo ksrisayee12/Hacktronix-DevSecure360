@@ -1,0 +1,22 @@
+rule_id: php_laravel_004
+vuln_class: SQLi
+severity: Critical
+issue: 'Laravel: Eloquent selectRaw injection (CWE-89)'
+cwe: CWE-89
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- ->selectRaw(
+sanitizers:
+- DB::select(
+- '?'
+- bindings
+remediation: Use parameterized bindings with ->selectRaw(. Never interpolate user
+  data into raw queries.

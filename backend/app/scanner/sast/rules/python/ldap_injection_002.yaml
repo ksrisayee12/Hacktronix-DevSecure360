@@ -1,0 +1,25 @@
+rule_id: python_ldap_002
+vuln_class: LDAP Injection
+severity: High
+issue: LDAP Injection via ldap3.Connection.search (CWE-90)
+cwe: CWE-90
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- ldap3.Connection.search
+sanitizers: []
+remediation: Escape LDAP special characters. Use parameterized LDAP queries.

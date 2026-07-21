@@ -1,0 +1,22 @@
+rule_id: php_lfi_002
+vuln_class: Path Traversal
+severity: High
+issue: Local File Inclusion/Path Traversal via include_once (CWE-22)
+cwe: CWE-22
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- include_once(
+sanitizers:
+- basename(
+- realpath(
+- in_array
+remediation: Validate file paths against an allowlist. Use basename() to strip directory
+  components.

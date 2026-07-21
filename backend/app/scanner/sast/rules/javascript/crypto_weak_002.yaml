@@ -1,0 +1,11 @@
+rule_id: js_crypto_weak_002
+vuln_class: Weak Crypto
+severity: Medium
+issue: 'Weak/Insecure cryptography: MD5 (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- crypto.createHash("md5")
+sanitizers: []
+remediation: Replace MD5 with a strong algorithm. Use crypto.randomBytes() instead
+  of Math.random().

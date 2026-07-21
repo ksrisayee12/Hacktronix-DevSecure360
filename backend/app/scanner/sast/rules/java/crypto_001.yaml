@@ -1,0 +1,10 @@
+rule_id: java_crypto_001
+vuln_class: Weak Crypto
+severity: High
+issue: 'Weak Cryptography: DES (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- Cipher.getInstance("DES")
+sanitizers: []
+remediation: 'Replace DES with a modern algorithm: AES-256-GCM, RSA-OAEP, SHA-256.'

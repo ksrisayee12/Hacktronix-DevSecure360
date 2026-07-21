@@ -1,0 +1,11 @@
+rule_id: js_crypto_weak_006
+vuln_class: Weak Crypto
+severity: Medium
+issue: 'Weak/Insecure cryptography: createCipher (deprecated) (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- crypto.createCipher(
+sanitizers: []
+remediation: Replace createCipher (deprecated) with a strong algorithm. Use crypto.randomBytes()
+  instead of Math.random().

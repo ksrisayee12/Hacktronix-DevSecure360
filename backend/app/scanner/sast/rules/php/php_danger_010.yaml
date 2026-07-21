@@ -1,0 +1,19 @@
+rule_id: php_danger_010
+vuln_class: Code Injection
+severity: Critical
+issue: 'PHP: Code injection via call_user_func_array() (CWE-94)'
+cwe: CWE-94
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- call_user_func_array(
+sanitizers: []
+remediation: Avoid call_user_func_array( with user-controlled input. Use validated
+  allowlists.

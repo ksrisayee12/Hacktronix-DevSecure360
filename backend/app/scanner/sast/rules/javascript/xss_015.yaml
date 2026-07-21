@@ -1,0 +1,28 @@
+rule_id: js_xss_015
+vuln_class: XSS
+severity: High
+issue: DOM XSS via eval( (CWE-79)
+cwe: CWE-79
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- eval(
+sanitizers:
+- DOMPurify.sanitize
+- escapeHtml
+- textContent
+- innerText
+remediation: Never assign user-controlled data to eval(. Use textContent or DOMPurify.sanitize().

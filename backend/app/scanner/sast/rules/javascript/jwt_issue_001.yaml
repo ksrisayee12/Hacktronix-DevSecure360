@@ -1,0 +1,10 @@
+rule_id: js_jwt_001
+vuln_class: JWT Bypass
+severity: Critical
+issue: 'Insecure JWT option: algorithm: ''none'' (CWE-347)'
+cwe: CWE-347
+sources: []
+sinks:
+- 'algorithm: ''none'''
+sanitizers: []
+remediation: Always specify a strong algorithm (RS256/ES256). Never use 'none'.

@@ -1,0 +1,10 @@
+rule_id: cpp_specific_008
+vuln_class: Memory Corruption
+severity: Medium
+issue: 'C++ specific: std::memcpy with user size (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- std::memcpy(
+sanitizers: []
+remediation: 'Address C++ specific issue: std::memcpy with user size'

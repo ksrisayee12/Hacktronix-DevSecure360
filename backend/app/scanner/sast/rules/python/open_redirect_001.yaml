@@ -1,0 +1,28 @@
+rule_id: python_redirect_001
+vuln_class: Open Redirect
+severity: Medium
+issue: Open Redirect via redirect( (CWE-601)
+cwe: CWE-601
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- redirect(
+sanitizers:
+- url_for
+- urlparse
+- is_safe_url
+remediation: Validate redirect targets against an allowlist of trusted domains.

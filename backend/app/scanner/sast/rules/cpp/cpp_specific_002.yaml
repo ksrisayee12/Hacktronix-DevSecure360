@@ -1,0 +1,10 @@
+rule_id: cpp_specific_002
+vuln_class: Memory Corruption
+severity: Medium
+issue: 'C++ specific: Unchecked static_cast (CWE-704)'
+cwe: CWE-704
+sources: []
+sinks:
+- static_cast<
+sanitizers: []
+remediation: 'Address C++ specific issue: Unchecked static_cast'

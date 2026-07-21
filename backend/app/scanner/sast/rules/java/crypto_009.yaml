@@ -1,0 +1,11 @@
+rule_id: java_crypto_009
+vuln_class: Weak Crypto
+severity: High
+issue: 'Weak Cryptography: Hardcoded Key (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- SecretKeySpec(hardcoded
+sanitizers: []
+remediation: 'Replace Hardcoded Key with a modern algorithm: AES-256-GCM, RSA-OAEP,
+  SHA-256.'

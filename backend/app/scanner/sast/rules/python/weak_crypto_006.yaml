@@ -1,0 +1,11 @@
+rule_id: python_weak_crypto_006
+vuln_class: Weak Crypto
+severity: Medium
+issue: Use of Broken Algorithm RC4 (CWE-327)
+cwe: CWE-327
+sources: []
+sinks:
+- Crypto.Cipher.ARC4
+sanitizers: []
+remediation: 'Replace RC4 with a modern algorithm: SHA-256/SHA-3 for hashing, AES-256-GCM
+  for encryption.'

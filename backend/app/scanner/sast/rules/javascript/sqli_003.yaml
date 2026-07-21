@@ -1,0 +1,28 @@
+rule_id: js_sqli_003
+vuln_class: SQLi
+severity: Critical
+issue: SQL Injection via TypeORM (CWE-89)
+cwe: CWE-89
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- typeorm.query(
+sanitizers:
+- parameterized
+- '?'
+- $
+remediation: Use parameterized queries with TypeORM. Never concatenate user input
+  into SQL.

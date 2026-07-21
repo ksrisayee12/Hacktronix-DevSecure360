@@ -1,0 +1,28 @@
+rule_id: python_cmdi_015
+vuln_class: CMDi
+severity: Critical
+issue: Command Injection via pexpect.run (CWE-78)
+cwe: CWE-78
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- pexpect.run
+sanitizers:
+- shlex.quote
+- shlex.split
+remediation: Avoid shell=True. Use subprocess with a list of arguments, never string
+  concatenation.

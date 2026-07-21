@@ -1,0 +1,28 @@
+rule_id: python_xxe_007
+vuln_class: XXE
+severity: High
+issue: XXE via pulldom (CWE-611)
+cwe: CWE-611
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- xml.dom.pulldom.parseString
+sanitizers:
+- defusedxml
+- XMLParser(resolve_entities=False)
+remediation: 'Use defusedxml library or disable external entity processing: parser.set_feature(feature_external_ges,
+  False)'

@@ -1,0 +1,28 @@
+rule_id: js_path_traversal_005
+vuln_class: Path Traversal
+severity: High
+issue: Path Traversal via fs.appendFile( (CWE-22)
+cwe: CWE-22
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- fs.appendFile(
+sanitizers:
+- path.basename
+- path.normalize
+- sanitize-filename
+remediation: Validate file paths with path.resolve() and ensure they are within allowed
+  directories.

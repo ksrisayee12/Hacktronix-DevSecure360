@@ -1,10 +1,15 @@
 rule_id: python_zip_slip_001
 vuln_class: Path Traversal
 severity: High
-issue: Zip Slip / Insecure Extraction (CWE-22)
+issue: Zip Slip via extractall() (CWE-22)
 cwe: CWE-22
 sources:
 - request.files
+- ZipFile
 sinks:
-- zipfile.ZipFile.extractall
-- tarfile.TarFile.extractall
+- extractall(
+- extract(
+sanitizers:
+- secure_filename
+- realpath
+remediation: Validate all zip entry paths before extraction to prevent directory traversal.

@@ -1,0 +1,22 @@
+rule_id: java_redirect_003
+vuln_class: Open Redirect
+severity: Medium
+issue: Open Redirect via RedirectView( (CWE-601)
+cwe: CWE-601
+sources:
+- request.getParameter
+- request.getHeader
+- request.getCookies
+- request.getInputStream
+- request.getReader
+- request.getQueryString
+- request.getPathInfo
+- request.getRemoteUser
+- httpRequest.getParameter
+- getParameter
+- getHeader
+- getQueryString
+sinks:
+- RedirectView(
+sanitizers: []
+remediation: Validate redirect targets against a whitelist of trusted paths.

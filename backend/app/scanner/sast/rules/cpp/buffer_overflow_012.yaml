@@ -1,0 +1,21 @@
+rule_id: c_buffer_overflow_012
+vuln_class: Buffer Overflow
+severity: Critical
+issue: Potential buffer overflow via alloca( (CWE-119)
+cwe: CWE-119
+sources:
+- argv
+- getenv
+- recv
+- read
+- fread
+- fgets
+- scanf
+- fscanf
+- sscanf
+- gets
+sinks:
+- alloca(
+sanitizers: []
+remediation: Validate the size argument to alloca(. Ensure destination buffer is large
+  enough.

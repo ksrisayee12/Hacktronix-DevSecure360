@@ -1,0 +1,11 @@
+rule_id: js_crypto_weak_007
+vuln_class: Weak Crypto
+severity: Medium
+issue: 'Weak/Insecure cryptography: DES (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- crypto.createCipheriv('des
+sanitizers: []
+remediation: Replace DES with a strong algorithm. Use crypto.randomBytes() instead
+  of Math.random().

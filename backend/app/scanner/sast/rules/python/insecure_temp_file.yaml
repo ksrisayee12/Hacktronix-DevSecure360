@@ -1,8 +1,12 @@
 rule_id: python_temp_file_001
 vuln_class: Insecure Temp File
 severity: Medium
-issue: Insecure Temporary File (CWE-377)
+issue: Insecure Temporary File Creation (CWE-377)
 cwe: CWE-377
 sources: []
 sinks:
-- tempfile.mktemp
+- tempfile.mktemp(
+sanitizers:
+- tempfile.NamedTemporaryFile
+- tempfile.mkstemp
+remediation: Use tempfile.NamedTemporaryFile() or tempfile.mkstemp() instead of mktemp().

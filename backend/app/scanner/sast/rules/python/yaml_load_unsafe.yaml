@@ -1,0 +1,27 @@
+rule_id: python_yaml_load_001
+vuln_class: Deserialization
+severity: Critical
+issue: Unsafe yaml.load() allows arbitrary code execution (CWE-502)
+cwe: CWE-502
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- yaml.load(
+- yaml.unsafe_load(
+sanitizers:
+- yaml.safe_load
+remediation: Always use yaml.safe_load() instead of yaml.load().

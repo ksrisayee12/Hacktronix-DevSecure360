@@ -1,0 +1,23 @@
+rule_id: c_syscall_013
+vuln_class: CMDi
+severity: Critical
+issue: 'Dangerous syscall: symlink( symlink() creation by user (CWE-78)'
+cwe: CWE-78
+sources:
+- argv
+- getenv
+- recv
+- read
+- fread
+- fgets
+- scanf
+- fscanf
+- sscanf
+- gets
+sinks:
+- symlink(
+sanitizers:
+- execve(
+- const char *const argv[]
+remediation: Validate all arguments to symlink(. Use allowlists and never pass user
+  input directly.

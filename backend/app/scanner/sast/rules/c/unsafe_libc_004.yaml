@@ -1,0 +1,14 @@
+rule_id: c_unsafe_libc_004
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: sprintf( sprintf() without bounds — use snprintf() (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- sprintf(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace sprintf( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

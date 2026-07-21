@@ -1,0 +1,10 @@
+rule_id: cpp_specific_009
+vuln_class: Memory Corruption
+severity: Medium
+issue: 'C++ specific: printf in C++ — prefer std::cout (CWE-134)'
+cwe: CWE-134
+sources: []
+sinks:
+- printf(
+sanitizers: []
+remediation: 'Address C++ specific issue: printf in C++ — prefer std::cout'

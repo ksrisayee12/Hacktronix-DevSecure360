@@ -1,0 +1,26 @@
+rule_id: python_log_012
+vuln_class: Log Injection
+severity: Medium
+issue: Log Injection via print( (CWE-117)
+cwe: CWE-117
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- print(
+sanitizers: []
+remediation: Sanitize user input before logging. Remove newline characters to prevent
+  log forging.

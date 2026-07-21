@@ -1,0 +1,12 @@
+rule_id: c_concurrency_001
+vuln_class: Race Condition
+severity: Medium
+issue: 'Concurrency issue via pthread_mutex_lock(: Missing unlock leads to deadlock
+  (CWE-362)'
+cwe: CWE-362
+sources: []
+sinks:
+- pthread_mutex_lock(
+sanitizers: []
+remediation: Use RAII locking. Replace pthread_mutex_lock( TOCTOU pattern with atomic
+  file operations.

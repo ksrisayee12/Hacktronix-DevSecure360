@@ -1,0 +1,18 @@
+rule_id: php_danger_001
+vuln_class: Variable Overwrite
+severity: High
+issue: 'PHP: Variable Overwrite via extract() (CWE-94)'
+cwe: CWE-473
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- extract(
+sanitizers: []
+remediation: Avoid extract( with user-controlled input. Use validated allowlists.

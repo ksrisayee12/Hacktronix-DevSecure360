@@ -1,0 +1,28 @@
+rule_id: python_ssrf_007
+vuln_class: SSRF
+severity: High
+issue: SSRF via requests.request (CWE-918)
+cwe: CWE-918
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- requests.request
+sanitizers:
+- ipaddress
+- urllib.parse.urlparse
+remediation: Validate URLs against an allowlist. Never forward user-supplied URLs
+  to internal services.

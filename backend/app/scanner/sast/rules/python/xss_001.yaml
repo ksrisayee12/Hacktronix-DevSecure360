@@ -1,0 +1,29 @@
+rule_id: python_xss_001
+vuln_class: XSS
+severity: High
+issue: Cross-Site Scripting via render_template_string (CWE-79)
+cwe: CWE-79
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- render_template_string
+sanitizers:
+- escape(
+- bleach.clean
+- html.escape
+- markupsafe.escape
+remediation: Use Jinja2 autoescape=True. Never pass user input to render_template_string.

@@ -1,0 +1,10 @@
+rule_id: cpp_specific_003
+vuln_class: Memory Corruption
+severity: High
+issue: 'C++ specific: std::string::c_str() pointer invalidation (CWE-119)'
+cwe: CWE-119
+sources: []
+sinks:
+- .c_str()
+sanitizers: []
+remediation: 'Address C++ specific issue: std::string::c_str() pointer invalidation'

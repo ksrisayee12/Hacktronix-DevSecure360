@@ -1,0 +1,18 @@
+rule_id: php_danger_006
+vuln_class: Variable Overwrite
+severity: High
+issue: 'PHP: Deprecated create_function() code injection (CWE-94)'
+cwe: CWE-94
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- create_function(
+sanitizers: []
+remediation: Avoid create_function( with user-controlled input. Use validated allowlists.

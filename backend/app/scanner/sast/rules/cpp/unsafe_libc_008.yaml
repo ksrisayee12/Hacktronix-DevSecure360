@@ -1,0 +1,14 @@
+rule_id: c_unsafe_libc_008
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: sscanf( sscanf() without field width (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- sscanf(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace sscanf( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

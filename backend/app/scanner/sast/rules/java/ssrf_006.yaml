@@ -1,0 +1,22 @@
+rule_id: java_ssrf_006
+vuln_class: SSRF
+severity: High
+issue: SSRF via WebClient.get( (CWE-918)
+cwe: CWE-918
+sources:
+- request.getParameter
+- request.getHeader
+- request.getCookies
+- request.getInputStream
+- request.getReader
+- request.getQueryString
+- request.getPathInfo
+- request.getRemoteUser
+- httpRequest.getParameter
+- getParameter
+- getHeader
+- getQueryString
+sinks:
+- WebClient.get(
+sanitizers: []
+remediation: Validate URLs against an allowlist before making outbound requests.

@@ -1,0 +1,22 @@
+rule_id: php_laravel_002
+vuln_class: Path Traversal
+severity: High
+issue: 'Laravel: Laravel DB::select raw (CWE-89)'
+cwe: CWE-89
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- DB::select(
+sanitizers:
+- DB::select(
+- '?'
+- bindings
+remediation: Use parameterized bindings with DB::select(. Never interpolate user data
+  into raw queries.

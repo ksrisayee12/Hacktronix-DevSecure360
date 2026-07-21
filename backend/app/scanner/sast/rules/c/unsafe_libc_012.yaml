@@ -1,0 +1,14 @@
+rule_id: c_unsafe_libc_012
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: getwd( getwd() may overflow destination buffer (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- getwd(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace getwd( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

@@ -1,0 +1,23 @@
+rule_id: php_sqli_013
+vuln_class: SQLi
+severity: Critical
+issue: SQL Injection via WordPress wpdb (CWE-89)
+cwe: CWE-89
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- $wpdb->query(
+sanitizers:
+- prepare(
+- bindParam(
+- bindValue(
+- real_escape_string
+remediation: Use prepared statements with WordPress wpdb. Never concatenate user data
+  into SQL.

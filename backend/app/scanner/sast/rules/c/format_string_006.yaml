@@ -1,0 +1,21 @@
+rule_id: c_format_string_006
+vuln_class: Format String
+severity: High
+issue: Format String via err( (CWE-134)
+cwe: CWE-134
+sources:
+- argv
+- getenv
+- recv
+- read
+- fread
+- fgets
+- scanf
+- fscanf
+- sscanf
+- gets
+sinks:
+- err(
+sanitizers: []
+remediation: 'Always use a literal format string: err(("%s", user_input) instead of
+  err((user_input).'

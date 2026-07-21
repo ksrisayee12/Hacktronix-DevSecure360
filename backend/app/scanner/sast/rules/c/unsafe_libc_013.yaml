@@ -1,0 +1,14 @@
+rule_id: c_unsafe_libc_013
+vuln_class: Memory Corruption
+severity: Critical
+issue: 'Unsafe C function: realpath( realpath() with NULL — potential overflow (CWE-120)'
+cwe: CWE-120
+sources: []
+sinks:
+- realpath(
+sanitizers:
+- snprintf(
+- strlcpy(
+- strlcat(
+- fgets(
+remediation: 'Replace realpath( with a bounds-checked alternative: snprintf/strncat/fgets/strtok_r.'

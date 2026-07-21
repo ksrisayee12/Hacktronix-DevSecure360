@@ -1,0 +1,29 @@
+rule_id: js_xss_017
+vuln_class: XSS
+severity: High
+issue: DOM XSS via setInterval( (CWE-79)
+cwe: CWE-79
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- setInterval(
+sanitizers:
+- DOMPurify.sanitize
+- escapeHtml
+- textContent
+- innerText
+remediation: Never assign user-controlled data to setInterval(. Use textContent or
+  DOMPurify.sanitize().

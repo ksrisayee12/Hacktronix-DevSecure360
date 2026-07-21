@@ -1,0 +1,18 @@
+rule_id: php_danger_008
+vuln_class: Code Injection
+severity: Critical
+issue: 'PHP: Code injection via usort with user callback (CWE-94)'
+cwe: CWE-94
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- usort(
+sanitizers: []
+remediation: Avoid usort( with user-controlled input. Use validated allowlists.

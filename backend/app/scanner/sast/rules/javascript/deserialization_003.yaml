@@ -1,0 +1,26 @@
+rule_id: js_deser_003
+vuln_class: Deserialization
+severity: Critical
+issue: Insecure Deserialization via js-yaml (CWE-502)
+cwe: CWE-502
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- yaml.load(
+sanitizers:
+- JSON.parse
+- yaml.safeLoad
+remediation: Never deserialize untrusted data with js-yaml.

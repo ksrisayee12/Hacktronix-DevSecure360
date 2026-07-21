@@ -1,0 +1,26 @@
+rule_id: python_pickle_001
+vuln_class: Deserialization
+severity: Critical
+issue: Insecure pickle.load/loads (CWE-502)
+cwe: CWE-502
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- pickle.load(
+- pickle.loads(
+sanitizers: []
+remediation: Do not deserialize untrusted data with pickle. Use JSON or signed tokens.

@@ -1,0 +1,10 @@
+rule_id: c_memory_006
+vuln_class: Memory Management
+severity: High
+issue: 'Memory management issue: calloc without NULL check (CWE-416)'
+cwe: CWE-476
+sources: []
+sinks:
+- calloc(
+sanitizers: []
+remediation: After calloc(, set pointer to NULL. Check return values of malloc/calloc/realloc.

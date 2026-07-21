@@ -1,7 +1,11 @@
 rule_id: python_django_debug_001
 vuln_class: Misconfiguration
 severity: High
-issue: Django DEBUG=True in code (CWE-489)
+issue: Django DEBUG=True in settings (CWE-489)
 cwe: CWE-489
 sources: []
-sinks: []
+sinks:
+- DEBUG = True
+- DEBUG=True
+sanitizers: []
+remediation: Set DEBUG=False in production. Use environment variable.

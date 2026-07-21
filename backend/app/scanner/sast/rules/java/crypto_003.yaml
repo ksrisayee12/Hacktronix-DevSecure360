@@ -1,0 +1,10 @@
+rule_id: java_crypto_003
+vuln_class: Weak Crypto
+severity: High
+issue: 'Weak Cryptography: AES-ECB (CWE-327)'
+cwe: CWE-327
+sources: []
+sinks:
+- Cipher.getInstance("AES/ECB")
+sanitizers: []
+remediation: 'Replace AES-ECB with a modern algorithm: AES-256-GCM, RSA-OAEP, SHA-256.'

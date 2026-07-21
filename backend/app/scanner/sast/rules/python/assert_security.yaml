@@ -1,0 +1,26 @@
+rule_id: python_assert_security_001
+vuln_class: Improper Input Validation
+severity: Medium
+issue: Using assert for security checks (CWE-617)
+cwe: CWE-617
+sources:
+- request.form
+- request.args
+- request.data
+- request.json
+- request.get_json
+- request.values
+- request.files
+- request.cookies
+- request.headers
+- request.GET
+- request.POST
+- request.body
+- os.environ
+- sys.argv
+- input(
+sinks:
+- 'assert '
+sanitizers: []
+remediation: Replace assert statements with proper if/raise validation. assert is
+  disabled with Python -O flag.

@@ -1,0 +1,26 @@
+rule_id: js_react_xss_002
+vuln_class: XSS
+severity: High
+issue: React XSS via bypassSecurityTrust (CWE-79)
+cwe: CWE-79
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- bypassSecurityTrust
+sanitizers:
+- DOMPurify.sanitize
+remediation: Never set dangerouslySetInnerHTML with user-controlled data. Use DOMPurify
+  first.

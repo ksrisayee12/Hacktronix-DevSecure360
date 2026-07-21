@@ -1,0 +1,10 @@
+rule_id: python_ssrf_ssl_001
+vuln_class: Improper Certificate Validation
+severity: Medium
+issue: SSL Certificate Verification Disabled (CWE-295)
+cwe: CWE-295
+sources: []
+sinks:
+- verify=False
+sanitizers: []
+remediation: Never set verify=False in production. Use a proper CA certificate bundle.

@@ -1,0 +1,27 @@
+rule_id: js_ssrf_002
+vuln_class: SSRF
+severity: High
+issue: SSRF via axios.post (CWE-918)
+cwe: CWE-918
+sources:
+- req.query
+- req.body
+- req.params
+- req.headers
+- req.cookies
+- request.query
+- request.body
+- location.search
+- location.hash
+- document.URL
+- document.referrer
+- window.location
+- process.env
+- process.argv
+sinks:
+- axios.post(
+sanitizers:
+- allowlist
+- isInternalUrl
+remediation: Validate URLs against an allowlist. Never forward user-supplied URLs
+  to backend services.

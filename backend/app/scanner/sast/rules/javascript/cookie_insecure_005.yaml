@@ -1,0 +1,11 @@
+rule_id: js_cookie_insecure_005
+vuln_class: Cookie Security
+severity: Medium
+issue: 'Insecure Cookie Flag: sameSite: false (CWE-614)'
+cwe: CWE-614
+sources: []
+sinks:
+- res.cookie(
+- cookie(
+sanitizers: []
+remediation: Set httpOnly:true, secure:true, sameSite:'Strict' on all cookies.

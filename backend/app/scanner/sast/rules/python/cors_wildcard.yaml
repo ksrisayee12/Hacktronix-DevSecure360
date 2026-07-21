@@ -1,8 +1,13 @@
-rule_id: python_cors_001
+rule_id: python_cors_wildcard_001
 vuln_class: Misconfiguration
 severity: Medium
-issue: CORS Wildcard Config (CWE-942)
+issue: CORS Wildcard Origin Allowed (CWE-942)
 cwe: CWE-942
 sources: []
 sinks:
-- CORS
+- origins='*'
+- origins="*"
+- allow_origins=['*']
+- allow_origins=["*"]
+sanitizers: []
+remediation: Specify explicit allowed origins instead of using wildcard *.

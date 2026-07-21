@@ -1,0 +1,23 @@
+rule_id: c_syscall_005
+vuln_class: CMDi
+severity: Critical
+issue: 'Dangerous syscall: execlp( execlp() with PATH hijacking (CWE-78)'
+cwe: CWE-78
+sources:
+- argv
+- getenv
+- recv
+- read
+- fread
+- fgets
+- scanf
+- fscanf
+- sscanf
+- gets
+sinks:
+- execlp(
+sanitizers:
+- execve(
+- const char *const argv[]
+remediation: Validate all arguments to execlp(. Use allowlists and never pass user
+  input directly.

@@ -1,0 +1,22 @@
+rule_id: php_laravel_006
+vuln_class: SQLi
+severity: Critical
+issue: 'Laravel: Eloquent groupByRaw injection (CWE-89)'
+cwe: CWE-89
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- ->groupByRaw(
+sanitizers:
+- DB::select(
+- '?'
+- bindings
+remediation: Use parameterized bindings with ->groupByRaw(. Never interpolate user
+  data into raw queries.

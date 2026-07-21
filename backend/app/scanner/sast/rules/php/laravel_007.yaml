@@ -1,0 +1,22 @@
+rule_id: php_laravel_007
+vuln_class: Path Traversal
+severity: High
+issue: 'Laravel: Laravel Storage path traversal (CWE-89)'
+cwe: CWE-89
+sources:
+- $_GET
+- $_POST
+- $_REQUEST
+- $_COOKIE
+- $_SERVER
+- $_FILES
+- getallheaders
+- file_get_contents('php://input')
+sinks:
+- Storage::put(
+sanitizers:
+- DB::select(
+- '?'
+- bindings
+remediation: Use parameterized bindings with Storage::put(. Never interpolate user
+  data into raw queries.
