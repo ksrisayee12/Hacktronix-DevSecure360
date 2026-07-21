@@ -43,6 +43,8 @@ from .parser.js_pack import extract_js_info
 from .parser.java_pack import extract_java_info
 from .parser.php_pack import extract_php_info
 from .parser.c_pack import extract_c_info
+from .parser.go_pack import extract_go_info
+from .parser.csharp_pack import extract_csharp_info
 from .cfg.builder import build_cfg
 from .taint.engine import TaintEngine
 from .taint.rule_index import RuleIndex
@@ -96,6 +98,8 @@ class SASTEngine:
             "php":        load_rules("php"),
             "c":          load_rules("c"),
             "cpp":        load_rules("cpp"),
+            "go":         load_rules("go"),
+            "csharp":     load_rules("csharp"),
         }
 
         # ── Performance Optimization 1: Pre-build Inverted Sink Index ──────────
@@ -336,10 +340,12 @@ class SASTEngine:
             return self._scan_java(file_path, source_code, source_bytes, tree)
         elif extension == ".php":
             return self._scan_php(file_path, source_code, source_bytes, tree)
-        elif extension in (".c", ".h"):
-            return self._scan_c(file_path, source_code, source_bytes, tree, "c")
-        elif extension in (".cpp", ".cc", ".cxx", ".hpp"):
-            return self._scan_c(file_path, source_code, source_bytes, tree, "cpp")
+        elif extension in (".c", ".h", ".cpp", ".cc", ".cxx", ".hpp"):
+            return self._scan_c(file_path, source_code, source_bytes, tree, "c" if extension in (".c", ".h") else "cpp")
+        elif extension == ".go":
+            return self._scan_go(file_path, source_code, source_bytes, tree)
+        elif extension == ".cs":
+            return self._scan_csharp(file_path, source_code, source_bytes, tree)
 
         return []
 
@@ -446,10 +452,50 @@ class SASTEngine:
             finding = taint_finding_to_finding(tf, rule, file_path, source_bytes)
             findings.append(finding)
 
-        findings.extend(self._detect_redos(file_path, file_info))
+        findings.extend(self._detect_secrets(file_path, file_info, source_bytes, "c_secret_001", language))
         return findings
 
-    # ── Cross-language helpers ─────────────────────────────────────────────────
+    def _scan_go(self, file_path: str, source_code: str,
+                 source_bytes: bytes, tree) -> list[Finding]:
+        """Run the full SAST pipeline on a Go file."""
+        findings = []
+
+        file_info = extract_go_info(tree, source_bytes)
+
+        taint_engine = TaintEngine(rules=self.rules["go"])
+        taint_findings = taint_engine.analyze(file_info, file_path)
+
+        for tf in taint_findings:
+            rule = self.rules["go"].get(tf.rule_id, {})
+            if not rule:
+                continue
+            finding = taint_finding_to_finding(tf, rule, file_path, source_bytes)
+            findings.append(finding)
+
+        findings.extend(self._detect_secrets(file_path, file_info, source_bytes, "go_secret_001", "go"))
+        return findings
+
+    def _scan_csharp(self, file_path: str, source_code: str,
+                     source_bytes: bytes, tree) -> list[Finding]:
+        """Run the full SAST pipeline on a C# file."""
+        findings = []
+
+        file_info = extract_csharp_info(tree, source_bytes)
+
+        taint_engine = TaintEngine(rules=self.rules["csharp"])
+        taint_findings = taint_engine.analyze(file_info, file_path)
+
+        for tf in taint_findings:
+            rule = self.rules["csharp"].get(tf.rule_id, {})
+            if not rule:
+                continue
+            finding = taint_finding_to_finding(tf, rule, file_path, source_bytes)
+            findings.append(finding)
+
+        findings.extend(self._detect_secrets(file_path, file_info, source_bytes, "csharp_secret_001", "csharp"))
+        return findings
+
+    # ── Non-AST Scanners (Secrets, ReDoS) ─────────────────────────────────────────────────
 
     def _detect_secrets(self, file_path: str, file_info, source_bytes: bytes,
                         rule_id: str, language: str) -> list[Finding]:
@@ -603,5 +649,5 @@ def _dict_to_finding(d: dict) -> Finding:
         issue=d.get("issue", ""), description=d.get("description", ""),
         evidence=d.get("evidence", ""), taint_trace=deserialized_trace,
         remediation=d.get("remediation", ""), tool=d.get("tool", "devsecure_sast"),
-        cwe=d.get("cwe"), cvss_score=d.get("cvss_score"), cvss_vector=d.get("cvss_vector"),
+        cwe=d.get("cwe"), owasp=d.get("owasp"), cvss_score=d.get("cvss_score"), cvss_vector=d.get("cvss_vector"),
     )

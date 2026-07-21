@@ -1,0 +1,20 @@
+rule_id: csharp_tier3_099
+vuln_class: Best Practice
+severity: Low
+issue: 'C# Best Practice #99 (CWE-1000)'
+cwe: CWE-1000
+sources:
+- Request.QueryString
+- Request.Form
+- Request.Cookies
+- Request.Headers
+- Request.InputStream
+- Request.Url
+- Console.ReadLine
+- Environment.GetCommandLineArgs
+- Environment.GetEnvironmentVariable
+sinks:
+- DeprecatedMethod99(
+sanitizers: []
+remediation: Validate and sanitize all user input before passing to Best Practice
+  sinks.

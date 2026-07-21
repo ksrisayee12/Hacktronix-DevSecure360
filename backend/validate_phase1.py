@@ -65,7 +65,7 @@ classes2 = [f.vuln_class for f in result2.findings]
 print(f"    Found: {classes2}")
 
 check("CMDi" in classes2,             "vuln_py.py -> CMDi (shell=True) detected")
-check("eval" in classes2,             "vuln_py.py -> eval() injection detected")
+check("Code Injection" in classes2,       "vuln_py.py -> eval() injection detected")
 check("Deserialization" in classes2,  "vuln_py.py -> pickle.loads detected")
 check("Hardcoded Secret" in classes2, "vuln_py.py -> Hardcoded Secret detected")
 
@@ -118,6 +118,26 @@ if result.findings:
     check(f.issue is not None,        "Finding has issue")
     check(f.remediation is not None,  "Finding has remediation")
     check(f.tool == "devsecure_sast", "Finding tool is devsecure_sast")
+
+# ── Test 5b: Go vulnerabilities ──────────────────────────────────────────────
+print("\n[5b] Scanning vuln_go.go")
+go_path = os.path.join(os.path.dirname(__file__), "vuln_go.go")
+result_go = engine.scan(go_path)
+classes_go = [f.vuln_class for f in result_go.findings]
+check("SQLi" in classes_go, "vuln_go.go -> SQLi detected")
+check("CMDi" in classes_go, "vuln_go.go -> CMDi detected")
+check("XSS" in classes_go, "vuln_go.go -> XSS detected")
+check("Path Traversal" in classes_go, "vuln_go.go -> Path Traversal detected")
+
+# ── Test 5c: C# vulnerabilities ──────────────────────────────────────────────
+print("\n[5c] Scanning vuln_csharp.cs")
+cs_path = os.path.join(os.path.dirname(__file__), "vuln_csharp.cs")
+result_cs = engine.scan(cs_path)
+classes_cs = [f.vuln_class for f in result_cs.findings]
+check("SQLi" in classes_cs, "vuln_csharp.cs -> SQLi detected")
+check("CMDi" in classes_cs, "vuln_csharp.cs -> CMDi detected")
+check("XSS" in classes_cs, "vuln_csharp.cs -> XSS detected")
+check("Path Traversal" in classes_cs, "vuln_csharp.cs -> Path Traversal detected")
 
 # ── Test 6: Multi-language support ────────────────────────────────────────────
 print("\n[6] Checking multi-language parser availability")

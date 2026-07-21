@@ -1,0 +1,22 @@
+rule_id: csharp_sqli_001
+vuln_class: SQLi
+severity: Critical
+issue: SQL Injection via SqlCommand (CWE-89)
+cwe: CWE-89
+sources:
+- Request.QueryString
+- Request.Form
+- Request.Cookies
+- Request.Headers
+- Request.InputStream
+- Request.Url
+- Console.ReadLine
+- Environment.GetCommandLineArgs
+- Environment.GetEnvironmentVariable
+sinks:
+- SqlCommand(
+- .ExecuteReader(
+- .ExecuteNonQuery(
+- .ExecuteScalar(
+sanitizers: []
+remediation: Validate and sanitize all user input before passing to SQLi sinks.

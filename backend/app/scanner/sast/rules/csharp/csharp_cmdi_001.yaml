@@ -1,0 +1,20 @@
+rule_id: csharp_cmdi_001
+vuln_class: CMDi
+severity: Critical
+issue: Command Injection via Process (CWE-78)
+cwe: CWE-78
+sources:
+- Request.QueryString
+- Request.Form
+- Request.Cookies
+- Request.Headers
+- Request.InputStream
+- Request.Url
+- Console.ReadLine
+- Environment.GetCommandLineArgs
+- Environment.GetEnvironmentVariable
+sinks:
+- Process.Start(
+- ProcessStartInfo(
+sanitizers: []
+remediation: Validate and sanitize all user input before passing to CMDi sinks.

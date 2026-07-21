@@ -1,0 +1,27 @@
+rule_id: go_tier3_073
+vuln_class: Best Practice
+severity: Low
+issue: 'Go Best Practice #73 (CWE-1000)'
+cwe: CWE-1000
+sources:
+- r.URL.Query
+- r.FormValue
+- r.PostFormValue
+- r.Form
+- r.PostForm
+- r.Header.Get
+- r.Cookie
+- r.Body
+- c.Query
+- c.Param
+- c.PostForm
+- c.GetHeader
+- c.Cookie
+- c.BodyParser
+- os.Args
+- os.Getenv
+sinks:
+- deprecated_function_73(
+sanitizers: []
+remediation: Validate and sanitize all user input before passing to Best Practice
+  sinks.

@@ -1,0 +1,31 @@
+rule_id: go_path_001
+vuln_class: Path Traversal
+severity: High
+issue: Path Traversal via os.Open (CWE-22)
+cwe: CWE-22
+sources:
+- r.URL.Query
+- r.FormValue
+- r.PostFormValue
+- r.Form
+- r.PostForm
+- r.Header.Get
+- r.Cookie
+- r.Body
+- c.Query
+- c.Param
+- c.PostForm
+- c.GetHeader
+- c.Cookie
+- c.BodyParser
+- os.Args
+- os.Getenv
+sinks:
+- os.Open(
+- os.OpenFile(
+- os.Create(
+- os.Remove(
+- os.ReadFile(
+sanitizers: []
+remediation: Validate and sanitize all user input before passing to Path Traversal
+  sinks.

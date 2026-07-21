@@ -1,0 +1,19 @@
+rule_id: csharp_xss_002
+vuln_class: XSS
+severity: High
+issue: XSS via HtmlString (CWE-79)
+cwe: CWE-79
+sources:
+- Request.QueryString
+- Request.Form
+- Request.Cookies
+- Request.Headers
+- Request.InputStream
+- Request.Url
+- Console.ReadLine
+- Environment.GetCommandLineArgs
+- Environment.GetEnvironmentVariable
+sinks:
+- new HtmlString(
+sanitizers: []
+remediation: Validate and sanitize all user input before passing to XSS sinks.

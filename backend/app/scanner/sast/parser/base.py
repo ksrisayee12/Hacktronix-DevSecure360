@@ -13,7 +13,7 @@ All node APIs (start_byte, end_byte, start_point, child_by_field_name, etc.)
 are identical to 0.21.x — only the Language/Parser initialization changed.
 
 Supported languages (Phase 1):
-    Python, JavaScript/TypeScript, Java, PHP, C, C++
+    Python, JavaScript/TypeScript, Java, PHP, C, C++, Go, C#
 """
 
 from tree_sitter import Language, Parser
@@ -61,6 +61,9 @@ def _load_parser(name: str) -> Parser | None:
         return None
 
 
+import tree_sitter_go
+import tree_sitter_c_sharp
+
 # ── Language objects ───────────────────────────────────────────────────────────
 PY_LANGUAGE   = _load_language("python")
 JS_LANGUAGE   = _load_language("javascript")
@@ -69,6 +72,8 @@ JAVA_LANGUAGE = _load_language("java")
 PHP_LANGUAGE  = _load_language("php")
 C_LANGUAGE    = _load_language("c")
 CPP_LANGUAGE  = _load_language("cpp")
+GO_LANGUAGE   = Language(tree_sitter_go.language())
+CSHARP_LANGUAGE = Language(tree_sitter_c_sharp.language())
 
 # ── Pre-built parsers (one per language for reuse) ────────────────────────────
 _PY_PARSER   = _load_parser("python")
@@ -78,6 +83,9 @@ _JAVA_PARSER = _load_parser("java")
 _PHP_PARSER  = _load_parser("php")
 _C_PARSER    = _load_parser("c")
 _CPP_PARSER  = _load_parser("cpp")
+
+_GO_PARSER = Parser(GO_LANGUAGE)
+_CSHARP_PARSER = Parser(CSHARP_LANGUAGE)
 
 
 # ── Extension → (Language, Parser) mapping ────────────────────────────────────
@@ -102,6 +110,8 @@ _register(".cpp",  CPP_LANGUAGE,  _CPP_PARSER)
 _register(".cc",   CPP_LANGUAGE,  _CPP_PARSER)
 _register(".cxx",  CPP_LANGUAGE,  _CPP_PARSER)
 _register(".hpp",  CPP_LANGUAGE,  _CPP_PARSER)
+_register(".go",   GO_LANGUAGE,   _GO_PARSER)
+_register(".cs",   CSHARP_LANGUAGE, _CSHARP_PARSER)
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 

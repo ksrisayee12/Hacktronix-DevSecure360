@@ -1,5 +1,5 @@
 rule_id: python_eval_001
-vuln_class: eval
+vuln_class: Code Injection
 severity: Critical
 issue: Code Injection via eval() (CWE-95)
 cwe: CWE-95
@@ -25,4 +25,5 @@ sinks:
 - compile(
 - __import__(
 sanitizers: []
-remediation: Never pass user input to eval() or exec(). Use safe alternatives like ast.literal_eval().
+remediation: Never pass user input to eval() or exec(). Use safe alternatives like
+  ast.literal_eval().
