@@ -1,0 +1,10 @@
+rule_id: python_zip_slip_001
+vuln_class: Path Traversal
+severity: High
+issue: Zip Slip / Insecure Extraction (CWE-22)
+cwe: CWE-22
+sources:
+- request.files
+sinks:
+- zipfile.ZipFile.extractall
+- tarfile.TarFile.extractall

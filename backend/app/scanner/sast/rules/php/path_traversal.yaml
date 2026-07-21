@@ -1,0 +1,11 @@
+rule_id: php_path_traversal_001
+vuln_class: Path Traversal
+severity: High
+issue: LFI / Path Traversal (CWE-22)
+cwe: CWE-22
+sources:
+- $_GET
+- $_POST
+sinks:
+- include
+- require

@@ -1,0 +1,11 @@
+rule_id: python_insecure_random_001
+vuln_class: Insecure Randomness
+severity: Medium
+issue: Use of Cryptographically Weak PRNG (CWE-338)
+remediation: Use secrets module (secrets.token_hex(), secrets.choice()) for security
+  tokens.
+sources: []
+sinks:
+- random.random
+- random.randint
+- random.choice

@@ -1,0 +1,8 @@
+rule_id: js_cookie_secure_001
+vuln_class: Cookie Security
+severity: Medium
+issue: Missing Secure Cookie Flag (CWE-614)
+cwe: CWE-614
+sources: []
+sinks:
+- res.cookie

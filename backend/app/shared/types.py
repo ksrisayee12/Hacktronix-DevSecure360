@@ -94,6 +94,8 @@ class Finding:
 
     # Meta
     tool: str                           # "devsecure_sast" / "devsecure_dast" / "devsecure_port" / "devsecure_secrets"
+    cvss_score: Optional[float] = None
+    cvss_vector: Optional[str] = None
 
 
 @dataclass

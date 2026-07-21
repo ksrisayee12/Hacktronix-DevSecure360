@@ -1,0 +1,10 @@
+rule_id: python_nosqli_001
+vuln_class: NoSQLi
+severity: High
+issue: NoSQL Injection (CWE-943)
+cwe: CWE-943
+sources:
+- request.get_json
+sinks:
+- db.find
+- db.find_one

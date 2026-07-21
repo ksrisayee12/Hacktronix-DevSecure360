@@ -1,0 +1,24 @@
+rule_id: python_eval_001
+language: python
+vuln_class: eval
+severity: Critical
+cwe: CWE-95
+owasp: A03:2021
+confidence: Confirmed
+sources:
+  - request.args.get
+  - request.form.get
+  - request.json
+  - request.values.get
+  - os.environ.get
+  - sys.argv
+  - input(
+sinks:
+  - eval(
+  - exec(
+  - compile(
+  - __import__(
+sanitizers: []
+issue: "Code Injection via eval() with user input"
+message: "User-controlled input is passed to eval() or exec(). This allows attackers to execute arbitrary Python code on the server, leading to full system compromise."
+remediation: "Never pass user input to eval() or exec(). If mathematical evaluation is needed, use ast.literal_eval() for safe literals, or a sandboxed math library like asteval."

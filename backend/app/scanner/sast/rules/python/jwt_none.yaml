@@ -1,0 +1,9 @@
+rule_id: python_jwt_none_001
+vuln_class: JWT Missing Signature
+severity: Critical
+issue: JWT decoded without verifying signature (CWE-347)
+cwe: CWE-347
+sources:
+- request.headers
+sinks:
+- jwt.decode

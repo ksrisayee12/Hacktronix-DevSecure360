@@ -1,0 +1,9 @@
+rule_id: java_jndi_001
+vuln_class: Code Execution
+severity: Critical
+issue: JNDI Injection (CWE-74)
+cwe: CWE-74
+sources:
+- request.getParameter
+sinks:
+- InitialContext.lookup

@@ -1,0 +1,8 @@
+rule_id: java_spring_csrf_001
+vuln_class: CSRF
+severity: Medium
+issue: Spring CSRF Disabled (CWE-352)
+cwe: CWE-352
+sources: []
+sinks:
+- csrf().disable()

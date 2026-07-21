@@ -1,0 +1,7 @@
+rule_id: python_auth_001
+vuln_class: Auth Bypass
+severity: High
+issue: Missing @login_required (CWE-285)
+cwe: CWE-285
+sources: []
+sinks: []

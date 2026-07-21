@@ -1,0 +1,9 @@
+rule_id: java_cmdi_001
+vuln_class: CMDi
+severity: Critical
+issue: Command Injection (CWE-78)
+cwe: CWE-78
+sources:
+- request.getParameter
+sinks:
+- Runtime.getRuntime().exec

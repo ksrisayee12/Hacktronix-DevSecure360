@@ -1,0 +1,9 @@
+rule_id: php_parse_str_001
+vuln_class: Variable Overwrite
+severity: High
+issue: Unsafe parse_str() usage (CWE-473)
+cwe: CWE-473
+sources:
+- $_SERVER['QUERY_STRING']
+sinks:
+- parse_str

@@ -1,0 +1,8 @@
+rule_id: python_crypto_pbkdf2_001
+vuln_class: Weak Crypto
+severity: Medium
+issue: Weak PBKDF2 Iterations (CWE-330)
+cwe: CWE-330
+sources: []
+sinks:
+- hashlib.pbkdf2_hmac

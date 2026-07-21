@@ -1,0 +1,9 @@
+rule_id: java_ognl_001
+vuln_class: Code Injection
+severity: Critical
+issue: OGNL Injection (CWE-94)
+cwe: CWE-94
+sources:
+- request.getParameter
+sinks:
+- Ognl.getValue

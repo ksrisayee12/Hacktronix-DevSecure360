@@ -1,0 +1,8 @@
+rule_id: js_cookie_samesite_001
+vuln_class: Cookie Security
+severity: Medium
+issue: Missing SameSite Cookie Flag (CWE-1275)
+cwe: CWE-1275
+sources: []
+sinks:
+- res.cookie

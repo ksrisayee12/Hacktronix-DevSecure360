@@ -1,0 +1,8 @@
+rule_id: java_spring_mass_assign_001
+vuln_class: Mass Assignment
+severity: Medium
+issue: Spring Mass Assignment (CWE-915)
+cwe: CWE-915
+sources:
+- '@ModelAttribute'
+sinks: []

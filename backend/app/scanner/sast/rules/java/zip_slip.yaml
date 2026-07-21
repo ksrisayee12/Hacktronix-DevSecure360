@@ -1,0 +1,9 @@
+rule_id: java_zip_slip_001
+vuln_class: Path Traversal
+severity: High
+issue: Zip Slip (CWE-22)
+cwe: CWE-22
+sources:
+- ZipEntry.getName
+sinks:
+- new File

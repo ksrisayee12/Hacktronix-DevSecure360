@@ -1,0 +1,11 @@
+rule_id: python_ldapi_001
+vuln_class: LDAP Injection
+severity: High
+issue: LDAP Injection (CWE-90)
+remediation: Use ldap3 escaping functions before constructing LDAP queries.
+sources:
+- request.args
+- request.form
+sinks:
+- ldap.search_s
+- connection.search

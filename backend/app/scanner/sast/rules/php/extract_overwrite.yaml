@@ -1,0 +1,9 @@
+rule_id: php_extract_001
+vuln_class: Variable Overwrite
+severity: High
+issue: Unsafe extract() usage (CWE-473)
+cwe: CWE-473
+sources:
+- $_REQUEST
+sinks:
+- extract

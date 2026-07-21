@@ -1,0 +1,8 @@
+rule_id: js_promise_001
+vuln_class: Denial of Service
+severity: Medium
+issue: Unhandled Promise Rejection (CWE-755)
+cwe: CWE-755
+sources: []
+sinks:
+- Promise

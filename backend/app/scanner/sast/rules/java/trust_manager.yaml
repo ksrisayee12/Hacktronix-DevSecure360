@@ -1,0 +1,8 @@
+rule_id: java_trust_manager_001
+vuln_class: Improper Validation
+severity: High
+issue: Insecure TrustManager (CWE-295)
+cwe: CWE-295
+sources: []
+sinks:
+- checkServerTrusted

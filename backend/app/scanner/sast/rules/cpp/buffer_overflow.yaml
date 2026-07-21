@@ -1,0 +1,10 @@
+rule_id: cpp_buffer_overflow_001
+vuln_class: Buffer Overflow
+severity: Critical
+issue: Buffer Overflow (CWE-119)
+cwe: CWE-119
+sources:
+- argv
+- recv
+sinks:
+- strcpy

@@ -1,0 +1,9 @@
+rule_id: java_ssrf_http_001
+vuln_class: SSRF
+severity: High
+issue: SSRF via HttpURLConnection (CWE-918)
+cwe: CWE-918
+sources:
+- request.getParameter
+sinks:
+- HttpURLConnection.connect

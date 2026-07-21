@@ -1,0 +1,10 @@
+rule_id: php_eval_001
+vuln_class: Code Injection
+severity: Critical
+issue: eval() Injection (CWE-94)
+cwe: CWE-94
+sources:
+- $_GET
+sinks:
+- eval
+- assert

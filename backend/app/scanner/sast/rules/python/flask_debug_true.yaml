@@ -1,0 +1,8 @@
+rule_id: python_flask_debug_001
+vuln_class: Misconfiguration
+severity: High
+issue: Flask debug=True in code (CWE-489)
+cwe: CWE-489
+sources: []
+sinks:
+- app.run

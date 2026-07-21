@@ -1,0 +1,8 @@
+rule_id: python_crypto_iv_001
+vuln_class: Weak Crypto
+severity: High
+issue: Hardcoded Crypto IV (CWE-329)
+cwe: CWE-329
+sources: []
+sinks:
+- AES.new

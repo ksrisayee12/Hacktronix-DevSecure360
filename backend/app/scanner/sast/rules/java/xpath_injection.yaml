@@ -1,0 +1,9 @@
+rule_id: java_xpath_001
+vuln_class: XPath Injection
+severity: High
+issue: XPath Injection (CWE-643)
+cwe: CWE-643
+sources:
+- request.getParameter
+sinks:
+- XPathExpression.evaluate

@@ -1,0 +1,8 @@
+rule_id: java_crypto_hardcoded_key_001
+vuln_class: Hardcoded Secret
+severity: High
+issue: Hardcoded Symmetric Key (CWE-798)
+cwe: CWE-798
+sources: []
+sinks:
+- new SecretKeySpec

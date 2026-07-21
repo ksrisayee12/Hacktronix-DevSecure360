@@ -1,0 +1,10 @@
+rule_id: js_prototype_pollution_001
+vuln_class: Prototype Pollution
+severity: High
+issue: Prototype Pollution (CWE-1321)
+cwe: CWE-1321
+sources:
+- req.body
+sinks:
+- merge
+- Object.assign

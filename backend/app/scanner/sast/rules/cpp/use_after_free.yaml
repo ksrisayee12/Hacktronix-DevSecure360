@@ -1,0 +1,10 @@
+rule_id: cpp_use_after_free_001
+vuln_class: Use After Free
+severity: Critical
+issue: Use After Free (CWE-416)
+cwe: CWE-416
+sources:
+- free
+sinks:
+- free
+- malloc

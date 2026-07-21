@@ -1,0 +1,9 @@
+rule_id: java_spel_001
+vuln_class: Code Injection
+severity: Critical
+issue: SpEL Injection (CWE-94)
+cwe: CWE-94
+sources:
+- request.getParameter
+sinks:
+- ExpressionParser.parseExpression

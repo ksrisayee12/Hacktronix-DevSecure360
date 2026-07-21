@@ -1,0 +1,10 @@
+rule_id: python_mass_assignment_001
+vuln_class: Mass Assignment
+severity: Medium
+issue: Mass Assignment (CWE-915)
+cwe: CWE-915
+sources:
+- request.form
+sinks:
+- update
+- Model

@@ -1,0 +1,9 @@
+rule_id: java_path_traversal_001
+vuln_class: Path Traversal
+severity: High
+issue: Path Traversal (CWE-22)
+cwe: CWE-22
+sources:
+- request.getParameter
+sinks:
+- new File

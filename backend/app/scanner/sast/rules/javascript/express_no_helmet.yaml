@@ -1,0 +1,7 @@
+rule_id: js_helmet_001
+vuln_class: Security Headers
+severity: Low
+issue: Missing Helmet Security Headers (CWE-693)
+cwe: CWE-693
+sources: []
+sinks: []

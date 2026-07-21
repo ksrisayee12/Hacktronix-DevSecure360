@@ -1,0 +1,10 @@
+rule_id: python_host_header_001
+vuln_class: Host Header Injection
+severity: Medium
+issue: Host Header Injection (CWE-644)
+cwe: CWE-644
+sources:
+- request.host
+sinks:
+- redirect
+- url_for

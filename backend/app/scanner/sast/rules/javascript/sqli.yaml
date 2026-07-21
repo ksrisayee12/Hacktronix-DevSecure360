@@ -1,0 +1,36 @@
+rule_id: js_sqli_001
+language: javascript
+vuln_class: SQLi
+severity: High
+cwe: CWE-89
+owasp: A03:2021
+confidence: Confirmed
+sources:
+  - req.query
+  - req.body
+  - req.params
+  - request.query
+  - request.body
+  - request.params
+  - req.query.
+  - process.env
+  - req.headers
+sinks:
+  - .query(
+  - .execute(
+  - db.query
+  - pool.query
+  - connection.query
+  - knex.raw(
+  - sequelize.query(
+  - .raw(
+sanitizers:
+  - "?"
+  - "$1"
+  - parameterized
+  - escape(
+  - mysql.escape
+  - pg.escapeLiteral
+issue: "SQL Injection via unsanitized user input"
+message: "User-controlled input from req.query/req.body flows into a SQL query without parameterization."
+remediation: "Use parameterized queries: db.query('SELECT * WHERE id = ?', [userId]) or use an ORM like Sequelize/Prisma with proper parameter binding."

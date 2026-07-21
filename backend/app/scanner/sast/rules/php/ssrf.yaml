@@ -1,0 +1,10 @@
+rule_id: php_ssrf_001
+vuln_class: SSRF
+severity: High
+issue: SSRF (CWE-918)
+cwe: CWE-918
+sources:
+- $_GET
+sinks:
+- curl_exec
+- file_get_contents

@@ -14,7 +14,7 @@ from app.shared.types import ScanResult, ScanStatus, ScanType, Finding, Severity
 from app.database.history_db import save_scan_result, get_scan_history
 from app.utils.aggregator import compute_score
 
-# Phase 1: from app.scanner.sast.engine import SASTEngine
+from app.scanner.sast.engine import SASTEngine
 # Phase 3: from app.scanner.port.scanner import PortScanner
 # Phase 4: from app.scanner.secrets.scanner import SecretScanner
 # Phase 5: from app.scanner.dast.engine import DASTEngine
@@ -50,10 +50,9 @@ async def scan_code(file: UploadFile = File(...)):
             shutil.move(path, os.path.join(target_dir, os.path.basename(path)))
             target = target_dir
 
-        # Phase 1: result = SASTEngine().scan(target_path=target)
-        result = _stub_result(ScanType.SAST, target)
+        result = SASTEngine().scan(target_path=target)
 
-        save_scan_result("sast", {"findings": result.findings, "score": result.score})
+        save_scan_result("sast", {"findings": [_f(f) for f in result.findings], "score": result.score})
         return {"scan_id": result.scan_id, "status": result.status, "findings": [_f(f) for f in result.findings], "score": result.score}
 
     except Exception as e:

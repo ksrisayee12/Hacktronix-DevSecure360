@@ -1,0 +1,10 @@
+rule_id: python_cmdi_subprocess_001
+vuln_class: CMDi
+severity: Critical
+issue: Command Injection via subprocess (CWE-78)
+cwe: CWE-78
+sources:
+- request.args
+sinks:
+- subprocess.run
+- subprocess.Popen

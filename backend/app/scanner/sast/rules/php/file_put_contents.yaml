@@ -1,0 +1,10 @@
+rule_id: php_fpc_001
+vuln_class: File Upload / Overwrite
+severity: High
+issue: Unsafe file_put_contents (CWE-434)
+cwe: CWE-434
+sources:
+- $_FILES
+- $_POST
+sinks:
+- file_put_contents

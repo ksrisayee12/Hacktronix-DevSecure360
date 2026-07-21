@@ -1,0 +1,10 @@
+rule_id: js_cmdi_001
+vuln_class: CMDi
+severity: Critical
+issue: Command Injection (CWE-78)
+cwe: CWE-78
+sources:
+- req.query
+sinks:
+- child_process.exec
+- exec

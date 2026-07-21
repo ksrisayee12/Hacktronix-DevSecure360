@@ -1,0 +1,8 @@
+rule_id: cpp_strcat_001
+vuln_class: Memory Corruption
+severity: Critical
+issue: Dangerous function strcat() (CWE-120)
+cwe: CWE-120
+sources: []
+sinks:
+- strcat

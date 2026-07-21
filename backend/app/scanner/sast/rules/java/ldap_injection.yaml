@@ -1,0 +1,9 @@
+rule_id: java_ldapi_001
+vuln_class: LDAP Injection
+severity: High
+issue: LDAP Injection (CWE-90)
+cwe: CWE-90
+sources:
+- request.getParameter
+sinks:
+- DirContext.search

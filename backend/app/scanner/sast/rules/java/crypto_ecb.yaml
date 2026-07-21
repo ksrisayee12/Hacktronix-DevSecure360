@@ -1,0 +1,8 @@
+rule_id: java_crypto_ecb_001
+vuln_class: Weak Crypto
+severity: High
+issue: ECB Cipher Mode Usage (CWE-327)
+cwe: CWE-327
+sources: []
+sinks:
+- Cipher.getInstance("AES/ECB/PKCS5Padding")

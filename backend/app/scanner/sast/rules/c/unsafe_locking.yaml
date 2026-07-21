@@ -1,0 +1,8 @@
+rule_id: cpp_locking_001
+vuln_class: Concurrency
+severity: Medium
+issue: Unsafe Thread Locking (CWE-664)
+cwe: CWE-664
+sources: []
+sinks:
+- pthread_mutex_lock

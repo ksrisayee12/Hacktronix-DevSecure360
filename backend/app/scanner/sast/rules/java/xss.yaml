@@ -1,0 +1,9 @@
+rule_id: java_xss_001
+vuln_class: XSS
+severity: High
+issue: XSS (CWE-79)
+cwe: CWE-79
+sources:
+- request.getParameter
+sinks:
+- response.getWriter().write

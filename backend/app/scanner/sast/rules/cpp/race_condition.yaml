@@ -1,0 +1,9 @@
+rule_id: cpp_race_001
+vuln_class: Concurrency
+severity: Medium
+issue: Race Condition (CWE-362)
+cwe: CWE-362
+sources: []
+sinks:
+- access
+- open

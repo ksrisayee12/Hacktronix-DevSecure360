@@ -1,0 +1,10 @@
+rule_id: js_nosqli_001
+vuln_class: NoSQL Injection
+severity: High
+issue: NoSQL Injection (CWE-943)
+cwe: CWE-943
+sources:
+- req.query
+sinks:
+- db.collection.find
+- User.find

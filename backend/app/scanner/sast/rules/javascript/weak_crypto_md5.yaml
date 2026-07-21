@@ -1,0 +1,8 @@
+rule_id: js_crypto_md5_001
+vuln_class: Weak Crypto
+severity: Medium
+issue: Use of Weak Hash MD5 (CWE-328)
+cwe: CWE-328
+sources: []
+sinks:
+- crypto.createHash('md5')

@@ -1,0 +1,9 @@
+rule_id: js_dom_clobbering_001
+vuln_class: DOM Clobbering
+severity: Medium
+issue: DOM Clobbering (CWE-79)
+cwe: CWE-79
+sources:
+- document.getElementById
+sinks:
+- window

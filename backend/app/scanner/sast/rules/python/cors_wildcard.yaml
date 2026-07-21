@@ -1,0 +1,8 @@
+rule_id: python_cors_001
+vuln_class: Misconfiguration
+severity: Medium
+issue: CORS Wildcard Config (CWE-942)
+cwe: CWE-942
+sources: []
+sinks:
+- CORS

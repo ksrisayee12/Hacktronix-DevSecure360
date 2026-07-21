@@ -1,0 +1,8 @@
+rule_id: java_crypto_rsa_pad_001
+vuln_class: Weak Crypto
+severity: High
+issue: RSA PKCS1.5 Padding Oracle (CWE-327)
+cwe: CWE-327
+sources: []
+sinks:
+- Cipher.getInstance("RSA/ECB/PKCS1Padding")

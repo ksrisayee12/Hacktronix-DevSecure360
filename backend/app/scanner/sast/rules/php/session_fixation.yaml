@@ -1,0 +1,8 @@
+rule_id: php_session_fixation_001
+vuln_class: Session Flaw
+severity: Medium
+issue: Session Fixation (CWE-384)
+cwe: CWE-384
+sources: []
+sinks:
+- session_id

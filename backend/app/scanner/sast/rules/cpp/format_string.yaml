@@ -1,0 +1,12 @@
+rule_id: cpp_format_string_001
+vuln_class: Format String
+severity: High
+issue: Format String (CWE-134)
+cwe: CWE-134
+sources:
+- argv
+- getenv
+- recv
+sinks:
+- printf
+- sprintf

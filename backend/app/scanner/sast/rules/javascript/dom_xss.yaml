@@ -1,0 +1,10 @@
+rule_id: js_dom_xss_001
+vuln_class: DOM XSS
+severity: High
+issue: DOM-based XSS (CWE-79)
+cwe: CWE-79
+sources:
+- location.search
+sinks:
+- innerHTML
+- document.write

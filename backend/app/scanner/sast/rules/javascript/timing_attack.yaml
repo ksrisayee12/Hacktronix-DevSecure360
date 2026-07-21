@@ -1,0 +1,8 @@
+rule_id: js_timing_001
+vuln_class: Timing Attack
+severity: Medium
+issue: Timing Attack via String Comparison (CWE-208)
+cwe: CWE-208
+sources: []
+sinks:
+- ==
