@@ -1,0 +1,33 @@
+rule_id: go_weak_crypto
+language: go
+vuln_class: Weak Crypto
+severity: Medium
+cwe: CWE-328
+owasp: A02:2021-Cryptographic Failures
+cvss_score: 5.9
+cvss_vector: CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Use of Weak Cryptographic Algorithms (MD5/SHA1/DES)
+message: |-
+  The application uses weak cryptographic hash functions like MD5, SHA1, or DES, or insecure random number generators from math/rand.
+sources: []
+sinks:
+- md5.New(
+- sha1.New(
+- des.NewCipher(
+- rc4.NewCipher(
+- rand.Int(
+- rand.Float64(
+sanitizers:
+- sha256.New(
+- sha512.New(
+- crypto/rand
+- rand.Reader
+remediation: |-
+  Use modern algorithms like SHA-256 (crypto/sha256). For cryptographic randomness, use crypto/rand instead of math/rand.
+
+  UNSAFE:
+    h := md5.New()
+
+  SAFE:
+    h := sha256.New()

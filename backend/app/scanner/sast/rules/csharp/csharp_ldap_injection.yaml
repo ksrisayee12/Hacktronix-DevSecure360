@@ -1,0 +1,30 @@
+rule_id: csharp_ldap_injection
+language: csharp
+vuln_class: LDAP Injection
+severity: High
+cwe: CWE-90
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: LDAP Injection via DirectorySearcher
+message: |-
+  User input is used to dynamically construct LDAP search filters. Attackers can inject special characters to bypass authentication or extract unauthorized information.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- new DirectorySearcher(
+- .Filter =
+sanitizers:
+- AntiXssEncoder.XmlAttributeEncode(
+- AntiXssEncoder.HtmlEncode(
+remediation: "Escape LDAP special characters (*, (, ), \\, \0) before including user input in LDAP queries. The AntiXssLibrary provides LDAP encoding methods.\n\nUNSAFE:\n  searcher.Filter = \"(uid=\" + username + \")\";\n\nSAFE:\n  // Properly escape username using a dedicated LDAP encoder"

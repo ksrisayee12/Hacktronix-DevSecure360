@@ -1,9 +1,0 @@
-rule_id: js_mongo_where_001
-vuln_class: NoSQL Injection
-severity: Critical
-issue: MongoDB $where Injection (CWE-943)
-cwe: CWE-943
-sources:
-- req.query
-sinks:
-- $where

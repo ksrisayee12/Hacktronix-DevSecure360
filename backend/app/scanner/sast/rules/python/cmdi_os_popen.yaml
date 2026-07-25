@@ -1,9 +1,0 @@
-rule_id: python_cmdi_popen_001
-vuln_class: CMDi
-severity: Critical
-issue: Command Injection via os.popen (CWE-78)
-cwe: CWE-78
-sources:
-- request.args
-sinks:
-- os.popen

@@ -1,9 +1,0 @@
-rule_id: php_mysqli_001
-vuln_class: SQLi
-severity: Critical
-issue: Raw mysqli_query (CWE-89)
-cwe: CWE-89
-sources:
-- $_POST
-sinks:
-- mysqli_query

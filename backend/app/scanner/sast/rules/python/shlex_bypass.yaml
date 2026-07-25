@@ -1,9 +1,0 @@
-rule_id: python_cmdi_shlex_001
-vuln_class: CMDi
-severity: Medium
-issue: Command Injection despite shlex (CWE-78)
-cwe: CWE-78
-sources:
-- request.args
-sinks:
-- shlex.split

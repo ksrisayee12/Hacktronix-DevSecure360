@@ -86,11 +86,13 @@ class BlockTransfer:
     """
 
     def __init__(self, sources: list[str], sinks: list[str],
-                 sanitizers: list[str], rules: dict):
+                 sanitizers: list[str], rules: dict, rule_index=None, ssa_map=None):
         self.sources = [s.lower() for s in sources]
         self.sinks = [s.lower() for s in sinks]
         self.sanitizers = [s.lower() for s in sanitizers]
         self.rules = rules
+        self.rule_index = rule_index
+        self.ssa_map = ssa_map or {}
 
     def compute(self, node_stmts: list, source_bytes: bytes,
                 in_taint: set[TaintLocation]) -> tuple[set, set, list]:
@@ -151,9 +153,21 @@ class BlockTransfer:
         else:
             target_text = get_node_text(target_node, source_bytes).strip()
             value_text  = get_node_text(value_node, source_bytes).strip() if value_node else stmt_text
+            
+        # Fix 1: Use SSA rewritten text if available
+        value_text = self.ssa_map.get(stmt_line, value_text)
 
         # Determine target location
         target_loc = self._text_to_location(target_text)
+
+        # Fix 4: Augmented assignment propagation
+        if getattr(stmt, "type", "") == "augmented_assignment" or "+=" in stmt_text or "-=" in stmt_text:
+            if target_loc in working_taint or self._find_tainted_in_text(value_text, working_taint):
+                gen_set.add(target_loc)
+                base = target_text.split("[")[0].split(".")[0].strip()
+                if base != target_text:
+                    gen_set.add(TaintLocation("var", base))
+                return
 
         # --- Case 1: RHS is a source call → GEN ---
         if self._text_contains_source(value_text):
@@ -190,7 +204,15 @@ class BlockTransfer:
 
         stmt_lower = stmt_text.lower()
 
-        for rule_id, rule in self.rules.items():
+        # Fix 5: Use RuleIndex if available
+        if self.rule_index:
+            # We don't have function_name easily here, so we extract from text
+            func_name = stmt_text.split("(")[0].split(".")[-1].strip() if "(" in stmt_text else ""
+            candidate_rules = self.rule_index.get_candidate_rules(stmt_text, func_name)
+        else:
+            candidate_rules = self.rules.items()
+
+        for rule_id, rule in candidate_rules:
             if not rule.get("sinks"):
                 continue
             # Check if any sink pattern appears in the statement
@@ -314,10 +336,10 @@ class BlockTransfer:
     def _text_to_location(self, text: str) -> TaintLocation:
         """Convert a variable text to a TaintLocation."""
         text = text.strip()
-        if "[" in text:
-            base = text[:text.index("[")].strip()
-            key = text[text.index("[") + 1:text.index("]")].strip().strip('"\'')
-            return TaintLocation("field", base, key)
+        if "[" in text and text.endswith("]"):
+            base = text.split("[")[0]
+            member = text[text.find("[")+1:-1].strip("'\"")
+            return TaintLocation("index", base, member)
         elif "." in text and not text.startswith('"'):
             parts = text.split(".", 1)
             return TaintLocation("field", parts[0].strip(), parts[1].strip())
@@ -346,9 +368,11 @@ class WorklistDataflow:
     It drives taint through the CFG respecting actual control flow.
     """
 
-    def __init__(self, rules: dict, source_bytes: bytes):
+    def __init__(self, rules: dict, source_bytes: bytes, rule_index=None, ssa_map=None):
         self.rules = rules
         self.source_bytes = source_bytes
+        self.rule_index = rule_index
+        self.ssa_map = ssa_map or {}
 
         # Collect all sources/sinks/sanitizers across all rules
         all_sources = []
@@ -363,7 +387,9 @@ class WorklistDataflow:
             sources=list(set(all_sources)),
             sinks=list(set(all_sinks)),
             sanitizers=list(set(all_sanitizers)),
-            rules=rules
+            rules=rules,
+            rule_index=self.rule_index,
+            ssa_map=self.ssa_map
         )
 
     def analyze_cfg(self, cfg: CFGGraph,

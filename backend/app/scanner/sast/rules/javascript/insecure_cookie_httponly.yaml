@@ -1,8 +1,0 @@
-rule_id: js_cookie_httponly_001
-vuln_class: Cookie Security
-severity: Medium
-issue: Missing HttpOnly Cookie Flag (CWE-1004)
-cwe: CWE-1004
-sources: []
-sinks:
-- res.cookie

@@ -1,8 +1,0 @@
-rule_id: cpp_null_deref_001
-vuln_class: Null Pointer Dereference
-severity: High
-issue: Null Pointer Dereference (CWE-476)
-cwe: CWE-476
-sources:
-- malloc
-sinks: []

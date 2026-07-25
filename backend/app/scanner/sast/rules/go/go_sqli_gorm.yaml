@@ -1,0 +1,37 @@
+rule_id: go_sqli_gorm
+language: go
+vuln_class: SQLi
+severity: Critical
+cwe: CWE-89
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: SQL Injection via raw queries in GORM
+message: |-
+  User-controlled data is passed to GORM methods using raw string concatenation. An attacker can manipulate the underlying SQL query.
+sources:
+- http.Request
+- r.URL.Query().Get(
+- r.FormValue(
+- r.PostFormValue(
+- r.Header.Get(
+- r.Cookie(
+- r.Body
+- os.Getenv(
+- os.Args[
+sinks:
+- db.Raw(
+- db.Where(
+- db.Exec(
+- db.First(
+sanitizers:
+- db.Prepare(
+remediation: |-
+  Use GORM's built-in parameterization instead of concatenating strings into raw queries or Where clauses.
+
+  UNSAFE:
+    db.Where("name = '" + name + "'").Find(&users)
+
+  SAFE:
+    db.Where("name = ?", name).Find(&users)

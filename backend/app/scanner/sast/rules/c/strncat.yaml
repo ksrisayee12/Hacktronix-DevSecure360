@@ -1,8 +1,0 @@
-rule_id: cpp_strncat_001
-vuln_class: Memory Corruption
-severity: Medium
-issue: Off-by-one in strncat() (CWE-193)
-cwe: CWE-193
-sources: []
-sinks:
-- strncat

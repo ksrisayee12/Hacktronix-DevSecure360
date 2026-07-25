@@ -1,8 +1,0 @@
-rule_id: python_csrf_001
-vuln_class: CSRF
-severity: Medium
-issue: CSRF Protection Disabled (CWE-352)
-cwe: CWE-352
-sources: []
-sinks:
-- csrf_exempt

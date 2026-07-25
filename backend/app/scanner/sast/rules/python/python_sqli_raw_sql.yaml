@@ -1,0 +1,70 @@
+rule_id: python_sqli_raw_sql
+language: python
+vuln_class: SQLi
+severity: Critical
+cwe: CWE-89
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: SQL Injection via cursor.execute() with unsanitized user input
+message: |-
+  User-controlled data from an HTTP request parameter flows directly into cursor.execute() without parameterization. An attacker can inject arbitrary SQL syntax to read sensitive data from any table, modify or delete records, bypass authentication checks, or in some database configurations execute OS commands via xp_cmdshell (MSSQL) or INTO OUTFILE (MySQL).
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- cursor.execute(
+- cursor.executemany(
+- connection.execute(
+- conn.execute(
+- db.execute(
+sanitizers:
+- '%s'
+- '?'
+- :param
+- int(
+- float(
+remediation: |-
+  Replace string concatenation or formatting in SQL queries with parameterized queries. The database driver handles all escaping automatically and the query structure cannot be altered by user input.
+
+  UNSAFE:
+    query = "SELECT * FROM users WHERE name='" + username + "'"
+    cursor.execute(query)
+
+  SAFE (psycopg2 / MySQLdb):
+    cursor.execute("SELECT * FROM users WHERE name=%s", (username,))
+
+  Never build SQL strings from user input under any circumstances.

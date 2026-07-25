@@ -1,9 +1,0 @@
-rule_id: cpp_integer_overflow_001
-vuln_class: Integer Overflow
-severity: Medium
-issue: Integer Overflow (CWE-190)
-cwe: CWE-190
-sources:
-- recv
-sinks:
-- malloc

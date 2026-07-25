@@ -1,0 +1,39 @@
+rule_id: java_xpath_injection
+language: java
+vuln_class: XPath Injection
+severity: High
+cwe: CWE-643
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: XPath Injection via XPathExpression
+message: |-
+  User input is concatenated into an XPath query string. Attackers can alter the query logic to bypass authentication or access unauthorized XML nodes.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- xpath.compile(
+- xpath.evaluate(
+sanitizers: []
+remediation: |-
+  Use precompiled XPath expressions with variables (XPathVariableResolver) instead of concatenating strings.
+
+  UNSAFE:
+    xpath.evaluate("//user[name='" + name + "']", doc);
+
+  SAFE:
+    // Implement and use XPathVariableResolver to bind 'name' safely

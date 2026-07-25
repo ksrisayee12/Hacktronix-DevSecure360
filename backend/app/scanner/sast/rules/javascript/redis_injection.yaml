@@ -1,9 +1,0 @@
-rule_id: js_redis_001
-vuln_class: Injection
-severity: High
-issue: Redis Command Injection (CWE-943)
-cwe: CWE-943
-sources:
-- req.query
-sinks:
-- redis.eval

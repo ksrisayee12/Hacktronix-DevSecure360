@@ -1,8 +1,0 @@
-rule_id: cpp_null_term_001
-vuln_class: String Handling
-severity: High
-issue: Missing Null Termination (CWE-170)
-cwe: CWE-170
-sources: []
-sinks:
-- strncpy

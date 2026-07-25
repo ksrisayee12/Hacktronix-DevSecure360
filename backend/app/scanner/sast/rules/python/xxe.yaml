@@ -1,9 +1,0 @@
-rule_id: python_xxe_001
-vuln_class: XXE
-severity: High
-issue: XXE (CWE-611)
-cwe: CWE-611
-sources:
-- request.data
-sinks:
-- lxml.etree.parse

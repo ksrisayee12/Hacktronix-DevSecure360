@@ -45,6 +45,8 @@ class TaintFinding:
     source_var: str         # the tainted variable name
     source_line: int        # line where the source was introduced
     taint_path: list[dict]  # list of {line, var, description} dicts
+    severity_override: str | None = None
+    confidence_override: str | None = None
 
 
 class TaintEngine:
@@ -58,8 +60,10 @@ class TaintEngine:
     Each rule is loaded from a YAML file by rules/loader.py.
     """
 
-    def __init__(self, rules: dict):
+    def __init__(self, rules: dict, rule_index=None, legacy_fallback_enabled: bool = False):
         self.rules = rules
+        self.rule_index = rule_index
+        self.legacy_fallback_enabled = legacy_fallback_enabled
 
     def analyze(self, file_info: FileInfo, file_path: str,
                 source_code: str = "") -> list[TaintFinding]:
@@ -90,6 +94,10 @@ class TaintEngine:
         # SSA ensures sanitizer detection is accurate (x_1 tainted, x_2 = int(x_1) → clean)
         ssa_builder = SSABuilder()
         ssa_form = ssa_builder.build(file_info)
+        
+        ssa_map = {}
+        for assignment in ssa_form.assignments:
+            ssa_map[assignment.original.line] = assignment.rewritten_value
 
         # ── Step 5: Module-level intraprocedural dataflow ────────────────────
         # Analyze all module-level statements (not inside any function)
@@ -99,30 +107,44 @@ class TaintEngine:
         )
 
         # ── Step 6: Per-function CFG-backed dataflow ─────────────────────────
+        source_lines = source_code.splitlines() if source_code else []
         for func_def in file_info.functions:
             try:
                 cfg = build_cfg(func_def, file_info.source_bytes)
                 dataflow = WorklistDataflow(
                     rules=augmented_rules,
-                    source_bytes=file_info.source_bytes
+                    source_bytes=file_info.source_bytes,
+                    rule_index=self.rule_index,
+                    ssa_map=ssa_map
                 )
 
-                # Seed function parameters as tainted (conservative)
+                # Seed function parameters as tainted ONLY if it is an HTTP route handler
                 initial_taint = set()
                 initial_origins = {}
-                for param in func_def.params:
-                    if param in ("self", "cls"):
-                        continue
-                    loc = TaintLocation("var", param)
-                    initial_taint.add(loc)
-                    initial_origins[loc] = TaintOrigin(
-                        location=loc,
-                        line=func_def.start_line,
-                        description=(
-                            f"Source: parameter '{param}' in {func_def.name}() "
-                            f"may receive user-controlled data"
+                
+                # Check previous few lines for route decorators (@app.route, @router.get, etc.)
+                is_route = False
+                if source_lines and func_def.start_line > 0:
+                    for i in range(max(0, func_def.start_line - 5), func_def.start_line - 1):
+                        line_text = source_lines[i].strip()
+                        if line_text.startswith("@") and ("route" in line_text or "get" in line_text or "post" in line_text or "put" in line_text or "delete" in line_text):
+                            is_route = True
+                            break
+                            
+                if is_route:
+                    for param in func_def.params:
+                        if param in ("self", "cls"):
+                            continue
+                        loc = TaintLocation("var", param)
+                        initial_taint.add(loc)
+                        initial_origins[loc] = TaintOrigin(
+                            location=loc,
+                            line=func_def.start_line,
+                            description=(
+                                f"Source: parameter '{param}' in {func_def.name}() "
+                                f"may receive user-controlled data (HTTP route)"
+                            )
                         )
-                    )
 
                 df_findings = dataflow.analyze_cfg(
                     cfg,
@@ -153,8 +175,9 @@ class TaintEngine:
         # ── Step 8: Fallback — Legacy line-by-line taint ─────────────────────
         # Run the legacy engine as a fallback to catch anything the new engine missed.
         # This ensures zero regression on the 42 existing tests.
-        legacy_findings = self._legacy_analyze(file_info, augmented_rules)
-        findings.extend(legacy_findings)
+        if self.legacy_fallback_enabled:
+            legacy_findings = self._legacy_analyze(file_info, augmented_rules)
+            findings.extend(legacy_findings)
 
         # ── Step 9: Deduplication ─────────────────────────────────────────────
         findings = self._deduplicate(findings)
@@ -244,17 +267,17 @@ class TaintEngine:
 
     def _deduplicate(self, findings: list[TaintFinding]) -> list[TaintFinding]:
         """
-        Deduplicate findings by (rule_id, sink_line, source_var).
-        Keep the finding with the most detailed taint path.
+        Deduplicate findings by (rule_id, sink_line, source_line).
+        Keep the finding with the shortest taint path (most direct).
         """
         seen: dict[tuple, TaintFinding] = {}
         for f in findings:
-            key = (f.rule_id, f.sink_line, f.source_var)
+            key = (f.rule_id, f.sink_line, f.source_line)
             if key not in seen:
                 seen[key] = f
             else:
-                # Keep the one with a longer/more descriptive taint path
-                if len(f.taint_path) > len(seen[key].taint_path):
+                # Keep shortest path
+                if len(f.taint_path) < len(seen[key].taint_path):
                     seen[key] = f
         return list(seen.values())
 
@@ -289,6 +312,17 @@ class TaintEngine:
             if "shell=true" not in call.full_text.lower():
                 continue
 
+            severity_ov = None
+            confidence_ov = None
+            if hasattr(call, "args_text") and call.args_text:
+                first_arg = call.args_text[0].strip()
+                # Check if it's a simple string literal without variables/formatting
+                if (first_arg.startswith('"') and first_arg.endswith('"')) or (first_arg.startswith("'") and first_arg.endswith("'")):
+                    # Not an f-string (would start with f"), no concatenation (+)
+                    if not first_arg.startswith("f") and "+" not in first_arg and "%" not in first_arg:
+                        severity_ov = "Low"
+                        confidence_ov = "Tentative"
+
             reported_lines.add(call.line)
             findings.append(TaintFinding(
                 rule_id=cmdi_rule_id,
@@ -304,7 +338,9 @@ class TaintEngine:
                         f"Pattern: {call.full_text[:100]} uses shell=True "
                         f"-- shell command injection possible regardless of argument source"
                     )
-                }]
+                }],
+                severity_override=severity_ov,
+                confidence_override=confidence_ov
             ))
 
         return findings

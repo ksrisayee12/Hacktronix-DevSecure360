@@ -64,8 +64,11 @@ def taint_finding_to_finding(
     # Extract code snippet around the sink line
     evidence = _extract_snippet(source_bytes, taint_finding.sink_line)
 
-    severity = SEVERITY_MAP.get(rule.get("severity", "Medium"), Severity.MEDIUM)
+    severity_str = taint_finding.severity_override if getattr(taint_finding, "severity_override", None) else rule.get("severity", "Medium")
+    severity = SEVERITY_MAP.get(severity_str, Severity.MEDIUM)
     cvss = CVSS_MAPPINGS.get(taint_finding.vuln_class, {"score": None, "vector": None})
+
+    confidence = taint_finding.confidence_override if getattr(taint_finding, "confidence_override", None) else rule.get("confidence", "Confirmed")
 
     return Finding(
         id=str(uuid.uuid4()),
@@ -76,7 +79,7 @@ def taint_finding_to_finding(
         line=taint_finding.sink_line,
         url=None,
         severity=severity,
-        confidence=rule.get("confidence", "Confirmed"),
+        confidence=confidence,
         cwe=rule.get("cwe"),
         owasp=rule.get("owasp"),
         cvss_score=cvss["score"],

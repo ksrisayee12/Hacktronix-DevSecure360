@@ -1,0 +1,63 @@
+rule_id: python_ssti_jinja
+language: python
+vuln_class: SSTI
+severity: Critical
+cwe: CWE-1336
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Server-Side Template Injection via Jinja2/Mako
+message: |-
+  User input is directly evaluated as a template string by engines like Jinja2 or Mako. An attacker can inject template directives to execute arbitrary Python code on the server, leading to full Remote Code Execution (RCE).
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- render_template_string(
+- jinja2.Template(
+- jinja2.Environment(
+- mako.template.Template(
+- Template(
+- string.Template(
+sanitizers: []
+remediation: |-
+  Never pass user input into functions that evaluate template strings (like render_template_string). Always pass user data as context variables to static template files.
+
+  UNSAFE:
+    return render_template_string('Hello ' + user_input)
+
+  SAFE:
+    return render_template('hello.html', name=user_input)

@@ -57,11 +57,10 @@ class TaintStep:
     description: str
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Finding:
     """
-    A single confirmed vulnerability finding.
-
+    A unified, enterprise-grade finding object covering SAST, DAST, and Port scanning.
     SAST findings:  have file, line, taint_trace. url is None.
     DAST findings:  have url, evidence (HTTP request/response). file/line are None.
     Port findings:  have url (host:port). file/line/taint_trace are empty.
@@ -82,8 +81,8 @@ class Finding:
     # Classification
     severity: Severity
     confidence: str                     # "Confirmed" / "Probable" / "Tentative"
-    cwe: Optional[str]                  # "CWE-89", "CWE-79", "CWE-78", etc.
-    owasp: Optional[str]               # "A03:2021", "A07:2021", etc.
+    cwe: Optional[str] = None                  # "CWE-89", "CWE-79", "CWE-78", etc.
+    owasp: Optional[str] = None               # "A03:2021", "A07:2021", etc.
 
     # Human-readable content
     issue: str                          # Short title: "SQL Injection via unsanitized input"

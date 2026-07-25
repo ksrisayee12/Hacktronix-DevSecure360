@@ -1,0 +1,38 @@
+rule_id: csharp_open_redirect
+language: csharp
+vuln_class: Open Redirect
+severity: Medium
+cwe: CWE-601
+owasp: A01:2021-Broken Access Control
+cvss_score: 6.1
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+confidence: Confirmed
+issue: Open Redirect via Response.Redirect
+message: |-
+  User input controls the destination of an HTTP redirect. Attackers can construct links that redirect users to malicious websites, facilitating phishing campaigns.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- Response.Redirect(
+- Redirect(
+- RedirectPermanent(
+- RedirectPreserveMethod(
+sanitizers:
+- Url.IsLocalUrl(
+remediation: |-
+  Validate redirect URLs against an allowlist, or use Url.IsLocalUrl() to ensure the URL is a relative path to prevent redirecting to external domains.
+
+  UNSAFE:
+    return Redirect(Request.QueryString["next"]);
+
+  SAFE:
+    if (Url.IsLocalUrl(Request.QueryString["next"])) return Redirect(Request.QueryString["next"]);

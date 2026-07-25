@@ -1,9 +1,0 @@
-rule_id: js_postmessage_001
-vuln_class: Message Origin
-severity: High
-issue: Unsafe postMessage Origin (CWE-346)
-cwe: CWE-346
-sources:
-- window.addEventListener
-sinks:
-- postMessage

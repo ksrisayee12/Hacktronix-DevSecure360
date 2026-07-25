@@ -1,0 +1,71 @@
+rule_id: python_path_traversal
+language: python
+vuln_class: Path Traversal
+severity: High
+cwe: CWE-22
+owasp: A01:2021-Broken Access Control
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Path Traversal via open() or os.path.join()
+message: |-
+  User input dictates file paths passed to functions like open() or send_file(). By injecting directory traversal sequences like '../', an attacker can access files outside the intended directory, potentially exposing sensitive files such as /etc/passwd or application source code.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- open(
+- os.open(
+- os.path.join(
+- pathlib.Path(
+- io.open(
+- builtins.open(
+- zipfile.ZipFile(
+- tarfile.open(
+- shutil.copy(
+- shutil.move(
+sanitizers:
+- os.path.basename(
+- os.path.abspath(
+- pathlib.Path.resolve(
+remediation: |-
+  Validate user input to ensure it only represents a filename, not a path. Use os.path.basename() to strip directories, or verify the resolved path starts with the intended base directory.
+
+  UNSAFE:
+    with open('/var/www/uploads/' + request.args.get('file')) as f:
+
+  SAFE:
+    filename = os.path.basename(request.args.get('file'))
+    with open('/var/www/uploads/' + filename) as f:

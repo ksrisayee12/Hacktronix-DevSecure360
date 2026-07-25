@@ -1,9 +1,0 @@
-rule_id: php_unserialize_001
-vuln_class: Insecure Deserialization
-severity: Critical
-issue: PHP Object Injection (CWE-502)
-cwe: CWE-502
-sources:
-- $_GET
-sinks:
-- unserialize

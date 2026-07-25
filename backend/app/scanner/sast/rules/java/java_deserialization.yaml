@@ -1,0 +1,44 @@
+rule_id: java_deserialization
+language: java
+vuln_class: Deserialization
+severity: Critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Insecure Deserialization via ObjectInputStream or XStream
+message: |-
+  Untrusted data is passed to insecure deserializers like ObjectInputStream or XStream without type validation. Attackers can craft malicious serialized objects that execute arbitrary code upon deserialization.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- ObjectInputStream(
+- readObject(
+- readUnshared(
+- XMLDecoder(
+- XStream.fromXML(
+- Yaml.load(
+- new ObjectMapper().readValue(
+sanitizers: []
+remediation: |-
+  Do not use Java native serialization (ObjectInputStream) for untrusted data. Use safer formats like JSON (Jackson/Gson) without polymorphic type handling enabled, or use ValidatingObjectInputStream.
+
+  UNSAFE:
+    Object obj = new ObjectInputStream(inputStream).readObject();
+
+  SAFE:
+    // Use JSON parsing with strict class types

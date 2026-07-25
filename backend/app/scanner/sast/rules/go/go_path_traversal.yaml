@@ -1,0 +1,43 @@
+rule_id: go_path_traversal
+language: go
+vuln_class: Path Traversal
+severity: High
+cwe: CWE-22
+owasp: A01:2021-Broken Access Control
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Path Traversal via os/ioutil
+message: |-
+  User input dictates the file path in file operations. Attackers can inject traversal sequences to access unauthorized files outside the intended directory.
+sources:
+- http.Request
+- r.URL.Query().Get(
+- r.FormValue(
+- r.PostFormValue(
+- r.Header.Get(
+- r.Cookie(
+- r.Body
+- os.Getenv(
+- os.Args[
+sinks:
+- os.Open(
+- os.Create(
+- os.ReadFile(
+- os.WriteFile(
+- ioutil.ReadFile(
+- ioutil.WriteFile(
+- http.ServeFile(
+- http.Dir(
+sanitizers:
+- filepath.Base(
+- filepath.Clean(
+remediation: |-
+  Use filepath.Base() to extract only the filename from user input, ensuring they cannot traverse directories.
+
+  UNSAFE:
+    os.ReadFile("/uploads/" + r.FormValue("file"))
+
+  SAFE:
+    filename := filepath.Base(r.FormValue("file"))
+    os.ReadFile(filepath.Join("/uploads/", filename))

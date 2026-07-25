@@ -1,0 +1,57 @@
+rule_id: python_ldap_injection
+language: python
+vuln_class: LDAP Injection
+severity: High
+cwe: CWE-90
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: LDAP Injection via ldap module
+message: |-
+  User input is used to dynamically construct LDAP search filters. An attacker can inject special characters to bypass authentication or extract unauthorized information from the directory.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- ldap.search(
+- ldap3.Connection.search(
+- ldap.modify(
+- ldap.add(
+- ldap.delete(
+- ldap.search_s(
+- ldap.compare(
+sanitizers: []
+remediation: "Escape LDAP special characters (*, (, ), \\, \0) using a library function before including user input in LDAP queries.\n\nUNSAFE:\n  conn.search('dc=example,dc=com', f'(uid={username})')\n\nSAFE:\n  import ldap3.utils.conv\n  safe_username = ldap3.utils.conv.escape_filter_chars(username)\n  conn.search('dc=example,dc=com', f'(uid={safe_username})')"

@@ -1,0 +1,38 @@
+rule_id: cpp_out_of_bounds_read
+language: cpp
+vuln_class: Memory Corruption
+severity: High
+cwe: CWE-125
+owasp: A01:2021-Broken Access Control
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Tentative
+issue: Out-of-bounds Read via unchecked index
+message: |-
+  User input controls the index used to access a buffer without bounds checking. Attackers can read sensitive data from adjacent memory locations.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- '['
+- std::vector::operator[]
+- std::array::operator[]
+sanitizers:
+- std::vector::at(
+- std::array::at(
+remediation: |-
+  Always validate indices against the bounds of the array or vector. For STL containers, prefer the .at() method over the [] operator, as .at() performs bounds checking and throws std::out_of_range on failure.
+
+  UNSAFE:
+    return myVector[userIndex];
+
+  SAFE:
+    return myVector.at(userIndex);

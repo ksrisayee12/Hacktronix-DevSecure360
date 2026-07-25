@@ -1,0 +1,72 @@
+rule_id: python_cmdi_subprocess
+language: python
+vuln_class: CMDi
+severity: Critical
+cwe: CWE-78
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Command Injection via subprocess or os with shell=True
+message: |-
+  User input flows directly into OS command execution functions like subprocess.call() or os.system(). If shell=True is used (or implied by os.system), an attacker can use shell metacharacters like ';' or '|' to break out of the intended command and execute arbitrary operating system commands on the server.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- subprocess.call(
+- subprocess.run(
+- subprocess.Popen(
+- subprocess.check_output(
+- subprocess.check_call(
+- os.system(
+- os.popen(
+- os.execv(
+- os.execve(
+- os.spawnv(
+- commands.getoutput(
+- commands.getstatusoutput(
+sanitizers:
+- shlex.quote(
+- pipes.quote(
+- shlex.split(
+remediation: |-
+  Avoid using shell=True and pass arguments as a list of strings rather than a single concatenated string. If you must use a shell, sanitize input strictly using shlex.quote().
+
+  UNSAFE:
+    os.system('ping -c 1 ' + user_ip)
+
+  SAFE:
+    subprocess.run(['ping', '-c', '1', user_ip], shell=False)

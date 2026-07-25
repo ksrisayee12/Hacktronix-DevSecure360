@@ -1,0 +1,49 @@
+rule_id: js_xss
+language: javascript
+vuln_class: XSS
+severity: High
+cwe: CWE-79
+owasp: A03:2021-Injection
+cvss_score: 7.1
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+confidence: Confirmed
+issue: Reflected Cross-Site Scripting (XSS) via unsanitized response writing
+message: |-
+  User input is directly written to the HTTP response without HTML sanitization or contextual encoding. Attackers can execute arbitrary JavaScript in the victim's browser.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- res.send(
+- res.write(
+- res.json(
+- document.write(
+- document.writeln(
+- innerHTML
+- outerHTML
+sanitizers:
+- DOMPurify.sanitize(
+- escapeHTML(
+remediation: |-
+  Always sanitize user input before reflecting it in HTML responses, or use safe sinks like textContent. See OWASP XSS Prevention Cheat Sheet for complete guidance.
+
+  UNSAFE:
+    res.send('<h1>Hello ' + req.query.name + '</h1>');
+
+  SAFE:
+    res.send('<h1>Hello ' + escapeHTML(req.query.name) + '</h1>');

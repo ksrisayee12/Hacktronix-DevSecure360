@@ -1,8 +1,0 @@
-rule_id: cpp_gets_001
-vuln_class: Memory Corruption
-severity: Critical
-issue: Dangerous function gets() (CWE-242)
-cwe: CWE-242
-sources: []
-sinks:
-- gets

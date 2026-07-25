@@ -134,17 +134,19 @@ class SASTEngine:
             + f" | Total: {total_rules} rules, {total_tokens} indexed tokens"
         )
 
-    def scan(self, target_path: str, use_cache: bool = True) -> ScanResult:
+    def scan(self, target_path: str, use_cache: bool = True, legacy_fallback: bool = False) -> ScanResult:
         """
         Scan a file or directory for security vulnerabilities.
 
         Args:
             target_path: Absolute path to a file or directory to scan.
             use_cache:   If True, use incremental scan cache (default True).
+            legacy_fallback: If True, runs the noisy line-by-line fallback engine.
 
         Returns:
             ScanResult with all findings. Never raises — errors go into result.error.
         """
+        self.legacy_fallback_enabled = legacy_fallback
         scan_id = str(uuid.uuid4())
         started_at = datetime.now(timezone.utc).isoformat()
         all_findings: list[Finding] = []
@@ -358,7 +360,7 @@ class SASTEngine:
 
         file_info = extract_python_info(tree, source_bytes)
 
-        taint_engine = TaintEngine(rules=self.rules["python"])
+        taint_engine = TaintEngine(rules=self.rules["python"], rule_index=self._rule_indices.get("python"), legacy_fallback_enabled=self.legacy_fallback_enabled)
         taint_findings = taint_engine.analyze(file_info, file_path, source_code=source_code)
 
         for tf in taint_findings:
@@ -379,7 +381,7 @@ class SASTEngine:
 
         file_info = extract_js_info(tree, source_bytes)
 
-        taint_engine = TaintEngine(rules=self.rules["javascript"])
+        taint_engine = TaintEngine(rules=self.rules["javascript"], rule_index=self._rule_indices.get("javascript"), legacy_fallback_enabled=self.legacy_fallback_enabled)
         taint_findings = taint_engine.analyze(file_info, file_path, source_code=source_code)
 
         for tf in taint_findings:
@@ -400,7 +402,7 @@ class SASTEngine:
 
         file_info = extract_java_info(tree, source_bytes)
 
-        taint_engine = TaintEngine(rules=self.rules["java"])
+        taint_engine = TaintEngine(rules=self.rules["java"], rule_index=self._rule_indices.get("java"), legacy_fallback_enabled=self.legacy_fallback_enabled)
         taint_findings = taint_engine.analyze(file_info, file_path)
 
         for tf in taint_findings:
@@ -421,7 +423,7 @@ class SASTEngine:
 
         file_info = extract_php_info(tree, source_bytes)
 
-        taint_engine = TaintEngine(rules=self.rules["php"])
+        taint_engine = TaintEngine(rules=self.rules["php"], rule_index=self._rule_indices.get("php"), legacy_fallback_enabled=self.legacy_fallback_enabled)
         taint_findings = taint_engine.analyze(file_info, file_path)
 
         for tf in taint_findings:
@@ -442,7 +444,7 @@ class SASTEngine:
         file_info = extract_c_info(tree, source_bytes, language)
 
         lang_rules = self.rules.get(language, {})
-        taint_engine = TaintEngine(rules=lang_rules)
+        taint_engine = TaintEngine(rules=lang_rules, rule_index=self._rule_indices.get(language), legacy_fallback_enabled=self.legacy_fallback_enabled)
         taint_findings = taint_engine.analyze(file_info, file_path)
 
         for tf in taint_findings:
@@ -462,7 +464,7 @@ class SASTEngine:
 
         file_info = extract_go_info(tree, source_bytes)
 
-        taint_engine = TaintEngine(rules=self.rules["go"])
+        taint_engine = TaintEngine(rules=self.rules["go"], rule_index=self._rule_indices.get("go"), legacy_fallback_enabled=self.legacy_fallback_enabled)
         taint_findings = taint_engine.analyze(file_info, file_path)
 
         for tf in taint_findings:
@@ -482,7 +484,7 @@ class SASTEngine:
 
         file_info = extract_csharp_info(tree, source_bytes)
 
-        taint_engine = TaintEngine(rules=self.rules["csharp"])
+        taint_engine = TaintEngine(rules=self.rules["csharp"], rule_index=self._rule_indices.get("csharp"), legacy_fallback_enabled=self.legacy_fallback_enabled)
         taint_findings = taint_engine.analyze(file_info, file_path)
 
         for tf in taint_findings:
@@ -614,7 +616,7 @@ def _finding_to_dict(f: Finding) -> dict:
         "id": f.id, "rule_id": f.rule_id, "vuln_class": f.vuln_class,
         "scan_type": getattr(f, "scan_type", "sast"),
         "file": f.file, "line": f.line, "url": getattr(f, "url", None),
-        "severity": f.severity if isinstance(f.severity, str) else str(f.severity),
+        "severity": f.severity.value if hasattr(f.severity, "value") else f.severity,
         "confidence": getattr(f, "confidence", "High"),
         "issue": f.issue, "description": getattr(f, "description", ""),
         "evidence": getattr(f, "evidence", ""), "taint_trace": serialized_trace,

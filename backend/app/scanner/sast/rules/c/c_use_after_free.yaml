@@ -1,0 +1,37 @@
+rule_id: c_use_after_free
+language: c
+vuln_class: Use After Free
+severity: Critical
+cwe: CWE-416
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Tentative
+issue: Use After Free
+message: |-
+  A pointer is used after the memory it points to has been freed. Attackers can control the freed memory region, potentially leading to arbitrary code execution if function pointers or vtables are manipulated.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- free(
+sanitizers: []
+remediation: |-
+  Set pointers to NULL immediately after freeing them. Avoid using dangling pointers.
+
+  UNSAFE:
+    free(ptr);
+    // ... later ...
+    ptr->value = 10;
+
+  SAFE:
+    free(ptr);
+    ptr = NULL;

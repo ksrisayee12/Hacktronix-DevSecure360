@@ -1,9 +1,0 @@
-rule_id: cpp_double_free_001
-vuln_class: Memory Corruption
-severity: Critical
-issue: Double Free (CWE-415)
-cwe: CWE-415
-sources:
-- free
-sinks:
-- free

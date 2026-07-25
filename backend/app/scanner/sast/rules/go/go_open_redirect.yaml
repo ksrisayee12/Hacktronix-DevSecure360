@@ -1,0 +1,33 @@
+rule_id: go_open_redirect
+language: go
+vuln_class: Open Redirect
+severity: Medium
+cwe: CWE-601
+owasp: A01:2021-Broken Access Control
+cvss_score: 6.1
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+confidence: Confirmed
+issue: Open Redirect via http.Redirect()
+message: |-
+  User input controls the destination URL of an HTTP redirect. Attackers can construct links that redirect users to malicious websites.
+sources:
+- http.Request
+- r.URL.Query().Get(
+- r.FormValue(
+- r.PostFormValue(
+- r.Header.Get(
+- r.Cookie(
+- r.Body
+- os.Getenv(
+- os.Args[
+sinks:
+- http.Redirect(
+sanitizers: []
+remediation: |-
+  Validate redirect URLs against a strict allowlist of permitted destinations.
+
+  UNSAFE:
+    http.Redirect(w, r, r.FormValue("next"), 302)
+
+  SAFE:
+    // Validate r.FormValue("next") is a safe, relative path before redirecting

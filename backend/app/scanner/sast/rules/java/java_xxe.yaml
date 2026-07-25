@@ -1,0 +1,50 @@
+rule_id: java_xxe
+language: java
+vuln_class: XXE
+severity: High
+cwe: CWE-611
+owasp: A05:2021-Security Misconfiguration
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: XML External Entity (XXE) Injection via unsafe parser
+message: |-
+  User-supplied XML is parsed by an XML parser that has not explicitly disabled external entity resolution. Attackers can inject DTDs to read local server files or perform SSRF.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- DocumentBuilderFactory.newInstance(
+- SAXParserFactory.newInstance(
+- XMLInputFactory.newInstance(
+- TransformerFactory.newInstance(
+- SchemaFactory.newInstance(
+- XMLReader
+- SAXParser
+sanitizers:
+- factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+- factory.setFeature("http://xml.org/sax/features/external-general-entities", false)
+- factory.setExpandEntityReferences(false)
+remediation: |-
+  Explicitly disable external entity processing and DOCTYPE declarations on the XML parser factory before parsing user input.
+
+  UNSAFE:
+    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    Document doc = dbf.newDocumentBuilder().parse(inputStream);
+
+  SAFE:
+    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    Document doc = dbf.newDocumentBuilder().parse(inputStream);

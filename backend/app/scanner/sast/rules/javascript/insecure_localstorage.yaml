@@ -1,9 +1,0 @@
-rule_id: js_localstorage_001
-vuln_class: Insecure Storage
-severity: Medium
-issue: Sensitive Data in LocalStorage (CWE-312)
-cwe: CWE-312
-sources: []
-sinks:
-- localStorage.setItem
-- sessionStorage.setItem

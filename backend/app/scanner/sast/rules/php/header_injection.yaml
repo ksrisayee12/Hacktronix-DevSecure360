@@ -1,9 +1,0 @@
-rule_id: php_header_injection_001
-vuln_class: Header Injection
-severity: Medium
-issue: Header Injection (CWE-113)
-cwe: CWE-113
-sources:
-- $_GET
-sinks:
-- header

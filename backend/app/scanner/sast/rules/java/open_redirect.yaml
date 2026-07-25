@@ -1,9 +1,0 @@
-rule_id: java_open_redirect_001
-vuln_class: Open Redirect
-severity: Medium
-issue: Open Redirect (CWE-601)
-cwe: CWE-601
-sources:
-- request.getParameter
-sinks:
-- response.sendRedirect

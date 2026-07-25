@@ -1,0 +1,40 @@
+rule_id: csharp_sqli_ef
+language: csharp
+vuln_class: SQLi
+severity: Critical
+cwe: CWE-89
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: SQL Injection via Entity Framework raw SQL
+message: |-
+  User-controlled data is passed to Entity Framework methods using raw string concatenation.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- .ExecuteSqlRaw(
+- .ExecuteSqlRawAsync(
+- .FromSqlRaw(
+- DbContext.Database.ExecuteSqlRaw(
+sanitizers:
+- .ExecuteSqlInterpolated(
+- .FromSqlInterpolated(
+- FromSql(
+remediation: |-
+  Use parameterized SQL methods in EF Core like FromSqlInterpolated or ExecuteSqlInterpolated which automatically parameterize interpolated strings.
+
+  UNSAFE:
+    ctx.Users.FromSqlRaw("SELECT * FROM Users WHERE Name = '" + name + "'");
+
+  SAFE:
+    ctx.Users.FromSqlInterpolated($"SELECT * FROM Users WHERE Name = {name}");

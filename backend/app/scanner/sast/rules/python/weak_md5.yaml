@@ -1,8 +1,0 @@
-rule_id: python_crypto_md5_001
-vuln_class: Weak Crypto
-severity: Medium
-issue: Use of Weak Hash MD5 (CWE-328)
-cwe: CWE-328
-sources: []
-sinks:
-- hashlib.md5

@@ -1,0 +1,40 @@
+rule_id: csharp_ssrf_httpclient
+language: csharp
+vuln_class: SSRF
+severity: High
+cwe: CWE-918
+owasp: A10:2021-Server-Side Request Forgery
+cvss_score: 8.6
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N
+confidence: Confirmed
+issue: Server-Side Request Forgery via HttpClient
+message: |-
+  User input constructs a URL that the server requests. Attackers can scan internal networks or access internal services.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- new HttpClient(
+- HttpClient.GetAsync(
+- HttpClient.PostAsync(
+- HttpClient.SendAsync(
+- WebClient.DownloadString(
+- WebRequest.Create(
+sanitizers: []
+remediation: |-
+  Validate requested URLs against a strict allowlist. Do not allow users to specify arbitrary URLs to fetch.
+
+  UNSAFE:
+    var client = new HttpClient();
+    var response = await client.GetAsync(url);
+
+  SAFE:
+    // Validate url against an allowlist before making the request

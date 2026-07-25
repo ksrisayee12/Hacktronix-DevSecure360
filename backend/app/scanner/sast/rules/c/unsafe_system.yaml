@@ -1,9 +1,0 @@
-rule_id: cpp_system_001
-vuln_class: CMDi
-severity: High
-issue: Unsafe system() call (CWE-78)
-cwe: CWE-78
-sources:
-- getenv
-sinks:
-- system

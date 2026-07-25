@@ -1,0 +1,49 @@
+rule_id: php_sqli
+language: php
+vuln_class: SQLi
+severity: Critical
+cwe: CWE-89
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: SQL Injection via unparameterized queries
+message: |-
+  User-controlled data is concatenated directly into a SQL query string. Attackers can inject SQL commands to bypass authentication or manipulate database records.
+sources:
+- $_GET[
+- $_POST[
+- $_REQUEST[
+- $_COOKIE[
+- $_FILES[
+- $_SERVER[
+- $HTTP_GET_VARS[
+- $HTTP_POST_VARS[
+- $HTTP_COOKIE_VARS[
+- $HTTP_RAW_POST_DATA
+- file_get_contents('php://input')
+sinks:
+- mysqli_query(
+- mysql_query(
+- pg_query(
+- sqlite_query(
+- PDO::query(
+- PDO::exec(
+- $db->query(
+- $mysqli->query(
+sanitizers:
+- prepare(
+- bindParam(
+- bindValue(
+- mysqli_real_escape_string(
+- pg_escape_string(
+- mysqli_stmt_bind_param(
+remediation: |-
+  Use prepared statements with parameterized queries (e.g., via PDO or MySQLi). Never concatenate user input directly into SQL strings.
+
+  UNSAFE:
+    $db->query("SELECT * FROM users WHERE id = " . $_GET['id']);
+
+  SAFE:
+    $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$_GET['id']]);

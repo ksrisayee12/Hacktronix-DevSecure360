@@ -1,0 +1,53 @@
+rule_id: js_path_traversal
+language: javascript
+vuln_class: Path Traversal
+severity: High
+cwe: CWE-22
+owasp: A01:2021-Broken Access Control
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Path Traversal via fs operations
+message: |-
+  User input controls the file path used in file system operations. Attackers can use traversal sequences ('../') to read or write files outside the intended directory, potentially exposing source code or credentials.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- fs.readFile(
+- fs.readFileSync(
+- fs.writeFile(
+- fs.writeFileSync(
+- fs.createReadStream(
+- fs.createWriteStream(
+- fs.open(
+- path.join(
+- path.resolve(
+- require(
+sanitizers:
+- path.basename(
+- path.normalize(
+remediation: |-
+  Validate file paths to ensure they reside within the expected directory. Use path.basename() if only a filename is expected.
+
+  UNSAFE:
+    fs.readFile('/uploads/' + req.query.file)
+
+  SAFE:
+    const filename = path.basename(req.query.file)
+    fs.readFile(path.join('/uploads', filename))

@@ -1,0 +1,66 @@
+rule_id: python_nosqli
+language: python
+vuln_class: NoSQLi
+severity: High
+cwe: CWE-943
+owasp: A03:2021-Injection
+cvss_score: 8.2
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:L/A:N
+confidence: Confirmed
+issue: NoSQL Injection via MongoDB query operators
+message: |-
+  User input is used to dynamically construct NoSQL queries. An attacker can inject query operators (like $ne or $gt) to alter the query logic, bypass authentication, or extract data.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- db.find(
+- db.find_one(
+- db.find_one_and_update(
+- collection.find(
+- collection.aggregate(
+- pymongo.collection.find(
+- $where
+- $regex
+- motor.collection.find(
+sanitizers: []
+remediation: |-
+  Ensure user input is properly typed (e.g., cast to string) before passing it into NoSQL queries to prevent operator injection.
+
+  UNSAFE:
+    db.users.find({'username': request.json.get('username')})
+
+  SAFE:
+    db.users.find({'username': str(request.json.get('username'))})

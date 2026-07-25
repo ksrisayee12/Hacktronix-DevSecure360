@@ -1,0 +1,47 @@
+rule_id: java_xss
+language: java
+vuln_class: XSS
+severity: High
+cwe: CWE-79
+owasp: A03:2021-Injection
+cvss_score: 6.1
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+confidence: Confirmed
+issue: Cross-Site Scripting (XSS) via unescaped response writer
+message: |-
+  User input is written directly to the HTTP response without HTML encoding. Attackers can inject malicious JavaScript which executes in the victim's browser context.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- response.getWriter().write(
+- response.getWriter().print(
+- response.getWriter().println(
+- out.println(
+- PrintWriter.write(
+- model.addAttribute(
+sanitizers:
+- ESAPI.encoder().encodeForHTML(
+- StringEscapeUtils.escapeHtml4(
+- HtmlUtils.htmlEscape(
+- Encode.forHtml(
+remediation: |-
+  Always HTML-encode user input before rendering it in the response, or use a template engine (like Thymeleaf) that auto-escapes output.
+
+  UNSAFE:
+    response.getWriter().write("<h1>Hello " + request.getParameter("name") + "</h1>");
+
+  SAFE:
+    response.getWriter().write("<h1>Hello " + Encode.forHtml(request.getParameter("name")) + "</h1>");

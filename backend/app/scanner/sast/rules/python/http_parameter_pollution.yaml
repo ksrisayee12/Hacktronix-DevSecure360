@@ -1,8 +1,0 @@
-rule_id: python_hpp_001
-vuln_class: HPP
-severity: Low
-issue: HTTP Parameter Pollution (CWE-235)
-cwe: CWE-235
-sources:
-- request.args.getlist
-sinks: []

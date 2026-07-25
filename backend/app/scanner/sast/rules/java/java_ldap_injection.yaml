@@ -1,0 +1,39 @@
+rule_id: java_ldap_injection
+language: java
+vuln_class: LDAP Injection
+severity: High
+cwe: CWE-90
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: LDAP Injection via InitialDirContext search
+message: |-
+  User input is used to dynamically construct LDAP search filters. Attackers can inject special characters to bypass authentication or extract unauthorized information.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- ctx.search(
+- dirContext.search(
+sanitizers: []
+remediation: |-
+  Use parameterized LDAP queries (JNDI search controls) instead of string concatenation for search filters.
+
+  UNSAFE:
+    ctx.search("ou=users", "(uid=" + username + ")", controls);
+
+  SAFE:
+    ctx.search("ou=users", "(uid={0})", new Object[]{username}, controls);

@@ -1,0 +1,68 @@
+rule_id: python_deserialization_pickle
+language: python
+vuln_class: Deserialization
+severity: Critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Insecure Deserialization via pickle or pyyaml
+message: |-
+  Untrusted data is passed to insecure deserializers like pickle.loads() or yaml.load(). Attackers can craft malicious serialized objects that execute arbitrary Python code when deserialized, leading to complete server compromise.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- pickle.loads(
+- pickle.load(
+- pickle.Unpickler(
+- yaml.load(
+- marshal.loads(
+- shelve.open(
+- jsonpickle.decode(
+- dill.loads(
+sanitizers:
+- yaml.safe_load(
+- json.loads(
+- ast.literal_eval(
+remediation: |-
+  Do not use pickle, marshal, or yaml.load() for untrusted data. Use safer formats like JSON or use yaml.safe_load().
+
+  UNSAFE:
+    data = pickle.loads(request.data)
+
+  SAFE:
+    data = json.loads(request.data)

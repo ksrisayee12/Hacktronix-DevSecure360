@@ -1,9 +1,0 @@
-rule_id: java_ssrf_001
-vuln_class: SSRF
-severity: High
-issue: SSRF (CWE-918)
-cwe: CWE-918
-sources:
-- request.getParameter
-sinks:
-- new URL

@@ -1,0 +1,40 @@
+rule_id: c_integer_overflow
+language: c
+vuln_class: Integer Overflow
+severity: High
+cwe: CWE-190
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+confidence: Tentative
+issue: Integer Overflow or Wraparound
+message: |-
+  User-controlled integer values are used in arithmetic operations without bounds checking. Attackers can trigger overflows or underflows, leading to logic errors or buffer overflows during memory allocation.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- malloc(
+- calloc(
+- realloc(
+- memcpy(
+- memmove(
+sanitizers: []
+remediation: |-
+  Validate integer inputs before performing arithmetic operations, especially if the result is used for memory allocation. Check against INT_MAX or UINT_MAX to prevent wrapping.
+
+  UNSAFE:
+    size_t total = count * sizeof(struct obj);
+    void *ptr = malloc(total);
+
+  SAFE:
+    if (count > MAX_COUNT) return ERROR;
+    size_t total = count * sizeof(struct obj);

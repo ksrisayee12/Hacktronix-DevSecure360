@@ -1,0 +1,43 @@
+rule_id: csharp_xss_response
+language: csharp
+vuln_class: XSS
+severity: High
+cwe: CWE-79
+owasp: A03:2021-Injection
+cvss_score: 6.1
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+confidence: Confirmed
+issue: Cross-Site Scripting via unescaped output
+message: |-
+  User input is written directly to the HTTP response without HTML encoding. Attackers can inject malicious scripts.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- Response.Write(
+- Response.WriteAsync(
+- HttpContext.Response.WriteAsync(
+- '@Html.Raw('
+- Html.Raw(
+- MvcHtmlString.Create(
+- HtmlHelper.Raw(
+sanitizers:
+- HttpUtility.HtmlEncode(
+- WebUtility.HtmlEncode(
+- HtmlEncoder.Default.Encode(
+remediation: |-
+  Always HTML-encode user input before rendering it in the response, or use Razor views which auto-escape by default.
+
+  UNSAFE:
+    Response.Write("<h1>Hello " + name + "</h1>");
+
+  SAFE:
+    Response.Write("<h1>Hello " + HttpUtility.HtmlEncode(name) + "</h1>");

@@ -1,0 +1,48 @@
+rule_id: js_code_injection
+language: javascript
+vuln_class: Code Injection
+severity: Critical
+cwe: CWE-94
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Code Injection via eval or Function
+message: |-
+  User input is executed as JavaScript code via eval(), new Function(), or related mechanisms. This gives an attacker full Remote Code Execution (RCE) in the Node.js environment.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- eval(
+- new Function(
+- vm.runInNewContext(
+- vm.runInThisContext(
+- vm.Script(
+- Function(
+- setTimeout(
+- setInterval(
+sanitizers: []
+remediation: |-
+  Never pass user input into eval() or new Function(). Use JSON.parse() if parsing serialized data, and safe sandboxing alternatives if code execution is strictly required.
+
+  UNSAFE:
+    eval('console.log(' + req.query.msg + ')')
+
+  SAFE:
+    console.log(req.query.msg)

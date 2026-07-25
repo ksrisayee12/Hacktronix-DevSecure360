@@ -1,0 +1,44 @@
+rule_id: csharp_path_traversal
+language: csharp
+vuln_class: Path Traversal
+severity: High
+cwe: CWE-22
+owasp: A01:2021-Broken Access Control
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Path Traversal via System.IO
+message: |-
+  User input dictates the file path used in System.IO operations. Attackers can use traversal sequences ('../') to read or write files outside the intended directory.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- File.ReadAllText(
+- File.WriteAllText(
+- File.Open(
+- File.Create(
+- File.ReadAllBytes(
+- new FileStream(
+- new StreamReader(
+- new StreamWriter(
+sanitizers:
+- Path.GetFileName(
+- Path.GetFullPath(
+remediation: |-
+  Use Path.GetFileName() to extract only the filename from user input, preventing directory traversal.
+
+  UNSAFE:
+    File.ReadAllText("/uploads/" + Request.QueryString["file"]);
+
+  SAFE:
+    var filename = Path.GetFileName(Request.QueryString["file"]);
+    File.ReadAllText(Path.Combine("/uploads/", filename));

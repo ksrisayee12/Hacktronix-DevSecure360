@@ -1,8 +1,0 @@
-rule_id: cpp_getenv_001
-vuln_class: Environment Injection
-severity: Medium
-issue: Environment Variable Hijacking (CWE-78)
-cwe: CWE-78
-sources: []
-sinks:
-- getenv

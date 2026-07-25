@@ -1,0 +1,46 @@
+rule_id: js_ssti
+language: javascript
+vuln_class: SSTI
+severity: Critical
+cwe: CWE-1336
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Server-Side Template Injection via template engines
+message: |-
+  User input is passed unsanitized into a template engine rendering function (like Pug, EJS, Handlebars). Attackers can inject template directives, which are evaluated by the engine, leading to Server-Side Template Injection and potentially Remote Code Execution.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- pug.render(
+- pug.compile(
+- ejs.render(
+- ejs.renderFile(
+- handlebars.compile(
+- nunjucks.renderString(
+sanitizers: []
+remediation: |-
+  Do not pass user input directly into template strings to be compiled. Always pass user input as context variables so the template engine treats them as data rather than executable code.
+
+  UNSAFE:
+    ejs.render('Hello ' + req.query.name)
+
+  SAFE:
+    ejs.render('Hello <%= name %>', {name: req.query.name})

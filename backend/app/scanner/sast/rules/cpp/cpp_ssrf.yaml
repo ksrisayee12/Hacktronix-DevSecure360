@@ -1,0 +1,34 @@
+rule_id: cpp_ssrf
+language: cpp
+vuln_class: SSRF
+severity: High
+cwe: CWE-918
+owasp: A10:2021-Server-Side Request Forgery
+cvss_score: 8.6
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N
+confidence: Confirmed
+issue: Server-Side Request Forgery via libcurl or Boost.Asio
+message: |-
+  User input constructs a URL that the server requests. Attackers can scan internal networks.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- curl_easy_setopt(curl, CURLOPT_URL,
+sanitizers: []
+remediation: |-
+  Validate requested URLs against a strict allowlist. Do not allow users to specify arbitrary URLs to fetch.
+
+  UNSAFE:
+    curl_easy_setopt(curl, CURLOPT_URL, user_url);
+
+  SAFE:
+    // Validate user_url against an allowlist before passing to libcurl

@@ -1,0 +1,29 @@
+rule_id: go_csrf
+language: go
+vuln_class: CSRF
+severity: High
+cwe: CWE-352
+owasp: A01:2021-Broken Access Control
+cvss_score: 8.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+confidence: Tentative
+issue: Cross-Site Request Forgery (CSRF)
+message: |-
+  The application may not implement CSRF protections. State-changing HTTP handlers registered without CSRF middleware (gorilla/csrf or nosurf) are vulnerable to cross-site request forgery. Note: this rule uses heuristic detection and requires manual review to confirm the absence of CSRF middleware. It will flag all route handlers; verify each finding manually.
+sources: []
+sinks:
+- http.HandleFunc(
+- http.Handle(
+- router.Handle(
+- router.HandleFunc(
+sanitizers:
+- gorilla/csrf
+- nosurf
+remediation: |-
+  Implement CSRF protection by requiring unpredictable tokens on state-changing requests, using established middleware like gorilla/csrf.
+
+  UNSAFE:
+    http.HandleFunc("/update", updateHandler)
+
+  SAFE:
+    // Wrap handler with CSRF middleware

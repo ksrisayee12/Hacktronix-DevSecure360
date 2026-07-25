@@ -1,9 +1,0 @@
-rule_id: java_rmi_001
-vuln_class: Code Execution
-severity: Critical
-issue: RMI Injection (CWE-502)
-cwe: CWE-502
-sources:
-- request.getParameter
-sinks:
-- Naming.lookup

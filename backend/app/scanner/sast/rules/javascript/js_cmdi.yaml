@@ -1,0 +1,48 @@
+rule_id: js_cmdi
+language: javascript
+vuln_class: CMDi
+severity: Critical
+cwe: CWE-78
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Command Injection via child_process functions
+message: |-
+  User input is executed as an operating system command through child_process.exec() or similar functions. Attackers can append malicious commands (e.g., using ';' or '&&') to gain full Remote Code Execution on the server.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- child_process.exec(
+- child_process.execSync(
+- child_process.spawn(
+- child_process.spawnSync(
+- child_process.execFile(
+- exec(
+- execSync(
+- spawn(
+sanitizers: []
+remediation: |-
+  Avoid using exec() and use execFile() or spawn() instead, passing arguments as an array so they are not evaluated by a shell.
+
+  UNSAFE:
+    exec('ping -c 1 ' + req.query.ip)
+
+  SAFE:
+    execFile('ping', ['-c', '1', req.query.ip])

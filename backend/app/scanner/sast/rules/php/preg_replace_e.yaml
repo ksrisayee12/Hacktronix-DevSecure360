@@ -1,9 +1,0 @@
-rule_id: php_preg_replace_001
-vuln_class: Code Execution
-severity: Critical
-issue: preg_replace /e modifier (CWE-94)
-cwe: CWE-94
-sources:
-- $_GET
-sinks:
-- preg_replace

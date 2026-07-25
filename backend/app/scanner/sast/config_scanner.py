@@ -5,7 +5,8 @@ Scans non-code files (.env, docker-compose, package.json, etc.) for misconfigura
 
 import os
 import json
-from app.shared.types import Finding
+import uuid
+from app.shared.types import Finding, ScanType, Severity
 
 class ConfigScanner:
     """Scans configuration files for misconfigurations."""
@@ -22,14 +23,14 @@ class ConfigScanner:
             # Check for DEBUG=True
             if "DEBUG" in line.upper() and ("TRUE" in line.upper() or "1" in line):
                 findings.append(Finding(
-                    id=f"env_debug_{i}",
+                    id=str(uuid.uuid4()),
                     rule_id="config_env_debug_001",
                     vuln_class="Misconfiguration",
-                    scan_type="sast",
+                    scan_type=ScanType.SAST,
                     file=file_path,
                     line=i + 1,
                     url=None,
-                    severity="High",
+                    severity=Severity.HIGH,
                     confidence="Confirmed",
                     issue="Debug Mode Enabled in Environment",
                     description="Running applications in debug mode in production can expose sensitive internal information.",
@@ -50,14 +51,14 @@ class ConfigScanner:
         for i, line in enumerate(source.splitlines()):
             if "privileged: true" in line.lower() or 'privileged: "true"' in line.lower():
                 findings.append(Finding(
-                    id=f"docker_priv_{i}",
+                    id=str(uuid.uuid4()),
                     rule_id="config_docker_privileged_001",
                     vuln_class="Misconfiguration",
-                    scan_type="sast",
+                    scan_type=ScanType.SAST,
                     file=file_path,
                     line=i + 1,
                     url=None,
-                    severity="Critical",
+                    severity=Severity.CRITICAL,
                     confidence="Confirmed",
                     issue="Docker Privileged Mode Enabled",
                     description="Running a container in privileged mode grants it almost all capabilities of the host.",
@@ -82,14 +83,14 @@ class ConfigScanner:
             for pkg, ver in all_deps.items():
                 if pkg == "express" and ver.startswith(("3.", "^3.", "2.", "1.")):
                     findings.append(Finding(
-                        id=f"pkg_json_express_{pkg}",
+                        id=str(uuid.uuid4()),
                         rule_id="config_pkg_outdated_001",
                         vuln_class="Vulnerable Dependency",
-                        scan_type="sast",
+                        scan_type=ScanType.SAST,
                         file=file_path,
                         line=None,
                         url=None,
-                        severity="High",
+                        severity=Severity.HIGH,
                         confidence="Confirmed",
                         issue="Outdated Express.js Version",
                         description=f"Found outdated and vulnerable version of {pkg} ({ver}).",

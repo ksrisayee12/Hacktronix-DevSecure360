@@ -1,9 +1,0 @@
-rule_id: python_race_condition_001
-vuln_class: Race Condition
-severity: Medium
-issue: Time-of-check Time-of-use (TOCTOU) Race Condition (CWE-367)
-remediation: Avoid os.path.exists before open. Just try to open and catch FileNotFoundError.
-sources: []
-sinks:
-- os.path.exists
-- os.access

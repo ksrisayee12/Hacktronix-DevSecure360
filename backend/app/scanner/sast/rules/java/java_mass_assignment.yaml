@@ -1,0 +1,41 @@
+rule_id: java_mass_assignment
+language: java
+vuln_class: Misconfiguration
+severity: Medium
+cwe: CWE-915
+owasp: A01:2021-Broken Access Control
+cvss_score: 5.3
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N
+confidence: Confirmed
+issue: Mass Assignment / Insecure Binding in Spring
+message: |-
+  The application binds user input directly to a domain object without using a Data Transfer Object (DTO) or specifying allowed fields. Attackers can modify unauthorized fields (e.g., isAdmin, role).
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- '@ModelAttribute'
+sanitizers:
+- '@InitBinder'
+- setAllowedFields(
+- setDisallowedFields(
+remediation: |-
+  Use Data Transfer Objects (DTOs) that only contain the fields meant to be modified by the user, or explicitly configure WebDataBinder to restrict allowed fields.
+
+  UNSAFE:
+    public String update(@ModelAttribute User user) { ... }
+
+  SAFE:
+    public String update(@ModelAttribute UserDTO userDto) { ... }

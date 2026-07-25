@@ -1,0 +1,42 @@
+rule_id: js_open_redirect
+language: javascript
+vuln_class: Open Redirect
+severity: Medium
+cwe: CWE-601
+owasp: A01:2021-Broken Access Control
+cvss_score: 6.1
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+confidence: Confirmed
+issue: Open Redirect via res.redirect
+message: |-
+  User input controls the destination of an HTTP redirect. Attackers can construct links that redirect users to malicious websites, facilitating phishing campaigns.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- res.redirect(
+- reply.redirect(
+sanitizers: []
+remediation: |-
+  Validate redirect URLs against an allowlist, or ensure the URL is a relative path to prevent redirecting to external domains.
+
+  UNSAFE:
+    res.redirect(req.query.next)
+
+  SAFE:
+    if (req.query.next.startsWith('/')) res.redirect(req.query.next)

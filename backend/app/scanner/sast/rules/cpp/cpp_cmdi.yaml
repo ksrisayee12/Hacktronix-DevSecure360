@@ -1,0 +1,41 @@
+rule_id: cpp_cmdi
+language: cpp
+vuln_class: CMDi
+severity: Critical
+cwe: CWE-78
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Command Injection via system
+message: |-
+  User input is passed directly to system() or popen(). Attackers can append shell commands to gain Remote Code Execution on the server.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- system(
+- popen(
+- execl(
+- execlp(
+- execle(
+- execv(
+- execvp(
+- execve(
+sanitizers: []
+remediation: |-
+  Avoid using system() which spawns a shell. Use exec() family functions and pass arguments as an array of strings.
+
+  UNSAFE:
+    system(command_string);
+
+  SAFE:
+    execvp("ping", args);

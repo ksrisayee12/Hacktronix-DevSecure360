@@ -1,0 +1,42 @@
+rule_id: java_ssrf
+language: java
+vuln_class: SSRF
+severity: High
+cwe: CWE-918
+owasp: A10:2021-Server-Side Request Forgery
+cvss_score: 8.6
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N
+confidence: Confirmed
+issue: Server-Side Request Forgery via URL connections
+message: |-
+  User input constructs a URL that the Java application then requests. Attackers can scan internal networks or access internal services (like AWS metadata).
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- new URL(
+- URLConnection
+- HttpURLConnection
+- HttpClient.execute(
+- HttpClient.send(
+sanitizers: []
+remediation: |-
+  Validate requested URLs against a strict allowlist of allowed hostnames. Do not allow users to specify arbitrary URLs for the server to fetch.
+
+  UNSAFE:
+    HttpURLConnection conn = (HttpURLConnection) new URL(userInput).openConnection();
+
+  SAFE:
+    // Validate userInput against allowed domain list before opening connection

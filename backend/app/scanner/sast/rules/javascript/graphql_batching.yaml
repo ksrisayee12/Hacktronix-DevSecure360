@@ -1,8 +1,0 @@
-rule_id: js_graphql_batching_001
-vuln_class: Denial of Service
-severity: Medium
-issue: GraphQL Batching Attack (CWE-770)
-cwe: CWE-770
-sources: []
-sinks:
-- graphqlHTTP

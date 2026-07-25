@@ -1,0 +1,40 @@
+rule_id: php_mass_assignment
+language: php
+vuln_class: Mass Assignment
+severity: Medium
+cwe: CWE-915
+owasp: A01:2021-Broken Access Control
+cvss_score: 5.3
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N
+confidence: Confirmed
+issue: Mass Assignment via Model::create() or fill()
+message: |-
+  The application passes user input directly into model creation or update methods without defining fillable or guarded attributes. Attackers can modify unauthorized fields.
+sources:
+- $_GET[
+- $_POST[
+- $_REQUEST[
+- $_COOKIE[
+- $_FILES[
+- $_SERVER[
+- $HTTP_GET_VARS[
+- $HTTP_POST_VARS[
+- $HTTP_COOKIE_VARS[
+- $HTTP_RAW_POST_DATA
+- file_get_contents('php://input')
+sinks:
+- create(
+- fill(
+- update(
+sanitizers:
+- $fillable
+- $guarded
+- only(
+remediation: |-
+  Define $fillable or $guarded arrays on your Eloquent models to restrict which attributes can be mass assigned. Use the only() method on the request object to explicitly select allowed fields.
+
+  UNSAFE:
+    User::create($_POST);
+
+  SAFE:
+    User::create($request->only(['username', 'email']));

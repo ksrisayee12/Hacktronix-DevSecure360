@@ -49,6 +49,8 @@ class CFGGraph:
         self.function_name = function_name
         self.nodes: dict[int, CFGNode] = {}
         self.edges: list[CFGEdge] = []
+        self._pred_map: dict[int, list[int]] = {}
+        self._succ_map: dict[int, list[int]] = {}
         self._next_id = 0
 
     def add_node(self, statements: list, source_lines: list[int], label: str = "") -> CFGNode:
@@ -66,14 +68,16 @@ class CFGGraph:
     def add_edge(self, from_id: int, to_id: int, condition: str = "unconditional"):
         """Add a directed edge between two nodes."""
         self.edges.append(CFGEdge(from_id=from_id, to_id=to_id, condition=condition))
+        self._pred_map.setdefault(to_id, []).append(from_id)
+        self._succ_map.setdefault(from_id, []).append(to_id)
 
     def successors(self, node_id: int) -> list[int]:
         """Return list of node IDs reachable directly from the given node."""
-        return [e.to_id for e in self.edges if e.from_id == node_id]
+        return self._succ_map.get(node_id, [])
 
     def predecessors(self, node_id: int) -> list[int]:
         """Return list of node IDs that have an edge to the given node."""
-        return [e.from_id for e in self.edges if e.to_id == node_id]
+        return self._pred_map.get(node_id, [])
 
     def all_node_ids_in_order(self) -> list[int]:
         """Return all node IDs in ascending order (entry → exit)."""
