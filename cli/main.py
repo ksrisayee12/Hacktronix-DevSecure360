@@ -52,17 +52,49 @@ app = typer.Typer(
 # ── Register sub-commands ──────────────────────────────────────────────────────
 
 # Direct commands from sub-apps (flattened into root)
-app.add_typer(scan_app,        name="scan",        help="Run SAST scan")
-app.add_typer(explain_app,     name="explain",     help="Explain findings")
+# Groups with genuine sub-commands (e.g. "remediation plan", "report json")
 app.add_typer(remediation_app, name="remediation", help="AI remediation workflow")
-app.add_typer(validate_app,    name="validate",    help="Validate patches")
 app.add_typer(report_app,      name="report",      help="Generate reports")
 app.add_typer(monitor_app,     name="monitor",     help="File monitoring")
 app.add_typer(project_app,     name="project",     help="Project management")
-app.add_typer(dashboard_app,   name="dashboard",   help="Open dashboard")
 
 
 # ── Top-level convenience commands (mirrors of sub-app commands) ───────────────
+
+# ── Top-level convenience commands ────────────────────────────────────────────
+
+@app.command("scan")
+def scan_cmd(
+    target: str = typer.Argument(".", help="File or directory to scan"),
+):
+    """Run a full SAST security scan on a file or directory."""
+    from cli.commands.scan import _do_sast_scan
+    _do_sast_scan(target)
+
+
+@app.command("explain")
+def explain_cmd(
+    target: str = typer.Argument(None, help="Finding ID, index, or severity (critical/high/medium/low)"),
+    page: int   = typer.Option(1, "--page", "-p"),
+):
+    """Explain findings from the last scan."""
+    from cli.commands.explain import explain
+    explain(target=target, page=page)
+
+
+@app.command("validate")
+def validate_cmd():
+    """Re-run SAST on patched files and show before/after comparison."""
+    from cli.commands.validate import validate
+    validate()
+
+
+@app.command("dashboard")
+def dashboard_cmd(tui: bool = typer.Option(False, "--tui")):
+    """Open the DevSecure360 dashboard."""
+    from cli.commands.dashboard import dashboard
+    dashboard(tui=tui)
+
 
 @app.command("sast")
 def sast_cmd(target: str = typer.Argument(".", help="Path to scan")):
