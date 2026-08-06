@@ -1,0 +1,19 @@
+rule_id: python_sqli_sqlite3
+language: python
+vuln_class: SQLi
+severity: Critical
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+issue: SQL Injection in sqlite3
+message: String concatenation or formatting used to construct SQL queries, leading
+  to SQL Injection.
+sources:
+- request.args
+- request.form
+- input(
+sinks:
+- conn.execute(
+- c.execute(
+- cursor.execute(
+sanitizers: []
+remediation: Use parameterized queries (e.g., execute('SELECT ... ?', (val,)))

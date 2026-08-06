@@ -37,8 +37,8 @@ def _tokenize_sink(sink: str) -> list[str]:
     tokens = set()
     tokens.add(sink_lower)
 
-    # Split on dots, underscores, colons (for Java/PHP)
-    parts = re.split(r"[.\s:>]+", sink_lower)
+    # Split on dots, underscores, colons, parens (for Java/PHP/JS)
+    parts = re.split(r"[.\s:>\(]+", sink_lower)
     for part in parts:
         if part and len(part) > 1:
             tokens.add(part)

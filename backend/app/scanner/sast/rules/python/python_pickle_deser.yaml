@@ -1,0 +1,18 @@
+rule_id: python_pickle_deser
+language: python
+vuln_class: Deserialization
+severity: Critical
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+issue: Insecure Deserialization via pickle
+message: Untrusted input is deserialized using pickle.loads().
+sources:
+- s
+- blob
+- request.data
+- request.form
+- input(
+sinks:
+- pickle.loads(
+sanitizers: []
+remediation: Never unpickle untrusted data. Use JSON or signed tokens.
