@@ -6,7 +6,7 @@ Sources: OWASP XXE Prevention Cheat Sheet, PayloadsAllTheThings XXE corpus.
 """
 
 
-def get_file_read_payloads() -> list:
+def get_payloads() -> list:
     """Payloads to read local files via XXE."""
     return [
         # Linux /etc/passwd
