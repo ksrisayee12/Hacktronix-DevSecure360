@@ -92,9 +92,9 @@ export default function CodeScan() {
           />
           <button
             onClick={handleScan}
-            disabled={loading}
+            disabled={loading || remediating}
             className={`px-6 py-2 rounded-md text-white font-semibold transition ${
-              loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#456882] hover:bg-[#98A1BC]"
+              loading || remediating ? "bg-gray-500 cursor-not-allowed" : "bg-[#456882] hover:bg-[#98A1BC]"
             }`}
           >
             {loading ? "Scanning..." : "Start Scan"}
@@ -118,13 +118,24 @@ export default function CodeScan() {
             {/* Score bar */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-[#F4EBD3]">Scan Summary</h3>
-              <span className={`px-3 py-1 rounded-full text-white text-sm font-bold ${
-                result.score?.score >= 80 ? "bg-green-600"
-                : result.score?.score >= 60 ? "bg-yellow-500"
-                : "bg-red-600"
-              }`}>
-                Score: {result.score?.score ?? 0} | Grade: {result.score?.grade ?? "N/A"}
-              </span>
+              <div className="flex space-x-4 items-center">
+                {result.findings?.length > 0 && (
+                  <button
+                    onClick={handleClearVuln}
+                    disabled={remediating || loading}
+                    className="px-4 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md font-semibold transition"
+                  >
+                    ✨ Clear Vuln (AI Fix)
+                  </button>
+                )}
+                <span className={`px-3 py-1 rounded-full text-white text-sm font-bold ${
+                  result.score?.score >= 80 ? "bg-green-600"
+                  : result.score?.score >= 60 ? "bg-yellow-500"
+                  : "bg-red-600"
+                }`}>
+                  Score: {result.score?.score ?? 0} | Grade: {result.score?.grade ?? "N/A"}
+                </span>
+              </div>
             </div>
 
             {/* Findings table */}
@@ -166,6 +177,30 @@ export default function CodeScan() {
               </p>
               <p><strong>Max CVSS:</strong> {result.score?.max_cvss ?? "N/A"}</p>
             </div>
+
+            {/* AI Autonomous Remediation */}
+            {result.findings && result.findings.length > 0 && (
+              <div className="mt-6 border-t border-[#456882] pt-6 flex flex-col items-center">
+                <h4 className="text-lg font-bold text-[#F4EBD3] mb-3">
+                  🤖 AI Autonomous Security Remediation
+                </h4>
+                <p className="text-xs text-gray-300 mb-4 text-center max-w-md">
+                  Send findings and source code to the LLM agent to automatically generate patched source code files.
+                </p>
+
+                <button
+                  onClick={handleClearVuln}
+                  disabled={remediating || loading}
+                  className={`px-6 py-3 rounded-lg text-white font-bold text-sm shadow-lg transition flex items-center gap-2 ${
+                    remediating
+                      ? "bg-purple-800 cursor-not-allowed animate-pulse"
+                      : "bg-purple-600 hover:bg-purple-500"
+                  }`}
+                >
+                  {remediating ? "🧠 AI Fixing Vulnerabilities..." : "✨ Fix Vulnerabilities with AI (LLM)"}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
