@@ -1,0 +1,33 @@
+# DevSecure360 — Backend Dependencies
+
+# Web Framework
+fastapi
+uvicorn[standard]
+pydantic>=2.0
+python-multipart
+python-dotenv
+
+# Database (Phase 2)
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Job Queue (Phase 8)
+redis
+rq
+
+# SAST Engine (Phase 1)
+tree-sitter==0.21.3
+tree-sitter-python==0.21.0
+tree-sitter-javascript==0.21.3
+tree-sitter-java==0.21.0
+networkx
+pyyaml
+
+# DAST Engine (Phase 5)
+beautifulsoup4
+playwright
+
+# REMOVED (replaced by our own engines):
+# bandit    <- replaced by SAST engine
+# semgrep   <- replaced by SAST engine

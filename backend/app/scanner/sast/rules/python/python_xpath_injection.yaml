@@ -1,0 +1,69 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/643.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=xpath
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html
+# Verification:    XPath injection sinks verified from CodeQL standard libraries.
+
+rule_id: python_xpath_injection
+language: python
+vuln_class: XPath Injection
+severity: High
+cwe: CWE-643
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: XPath Injection via untrusted input
+message: |-
+  User input is concatenated directly into an XPath expression. An attacker can alter the query structure to bypass authentication (e.g., matching a true condition) or extract unauthorized XML data.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- .xpath(
+- tree.xpath(
+- document.xpath(
+- xml.etree.ElementTree.Element.findall(
+- xml.etree.ElementTree.Element.find(
+sanitizers: []
+remediation: |-
+  Avoid string concatenation when building XPath queries. Parameterize XPath queries using libraries that support variables (like lxml with dicts of variables).
+
+  UNSAFE:
+    tree.xpath(f"//user[name/text()='{username}']")
+
+  SAFE:
+    tree.xpath("//user[name/text()=$username]", username=username)

@@ -1,0 +1,43 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/502.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=deserialization
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html
+# Verification:    Deserialization sinks verified from CodeQL standard libraries and OWASP Deserialization Cheat Sheet.
+
+rule_id: php_deserialization
+language: php
+vuln_class: Deserialization
+severity: Critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Insecure Deserialization via unserialize
+message: |-
+  Untrusted data is passed to unserialize(). Attackers can craft malicious serialized PHP objects that execute arbitrary code upon deserialization (via magic methods).
+sources:
+- $_GET[
+- $_POST[
+- $_REQUEST[
+- $_COOKIE[
+- $_FILES[
+- $_SERVER[
+- $HTTP_GET_VARS[
+- $HTTP_POST_VARS[
+- $HTTP_COOKIE_VARS[
+- $HTTP_RAW_POST_DATA
+- file_get_contents('php://input')
+sinks:
+- unserialize(
+sanitizers:
+- json_decode(
+remediation: |-
+  Do not use unserialize() for untrusted data. Use safer data formats like JSON and json_decode().
+
+  UNSAFE:
+    $data = unserialize($_COOKIE['session']);
+
+  SAFE:
+    $data = json_decode($_COOKIE['session'], true);

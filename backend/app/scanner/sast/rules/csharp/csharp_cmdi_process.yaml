@@ -1,0 +1,44 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/78.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=command+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html
+# Verification:    Command injection sinks verified from CodeQL standard libraries and Semgrep registry.
+
+rule_id: csharp_cmdi_process
+language: csharp
+vuln_class: CMDi
+severity: Critical
+cwe: CWE-78
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Command Injection via Process.Start
+message: |-
+  User input is passed to Process.Start or ProcessStartInfo. Attackers can execute arbitrary OS commands.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- Process.Start(
+- new ProcessStartInfo(
+- ProcessStartInfo(
+- System.Diagnostics.Process.Start(
+sanitizers: []
+remediation: |-
+  Do not pass user input to Process.Start. If you must, pass arguments safely via the Arguments property of ProcessStartInfo rather than concatenating them into the file name.
+
+  UNSAFE:
+    Process.Start("cmd.exe", "/c ping " + ip);
+
+  SAFE:
+    // Validate IP and pass it in ProcessStartInfo.Arguments

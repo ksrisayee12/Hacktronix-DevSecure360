@@ -1,0 +1,49 @@
+Analyze the following code extract and its vulnerability:
+
+File: C:/Users/SRISAYEE/AppData/Local/Temp/tmpnxkww7b1/vuln_py.py
+Lines: 19 to 19
+
+Vulnerability Description: Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+
+Full File Code:
+# vuln_python.py — safe, intentionally insecure patterns for testing
+import subprocess
+import pickle
+import os
+
+# 1) shell=True usage (Bandit should flag)
+def list_files_bad():
+    # safe command but shell=True is insecure; bandit will flag
+    subprocess.call("echo 'listing files' && dir", shell=True)
+
+# 2) use of eval on user input (Semgrep/Bandit will flag)
+def calculate(expression):
+    # insecure: eval on input
+    return eval(expression)
+
+# 3) pickle.loads usage on untrusted data (dangerous pattern flagged)
+def unsafe_deserialize(s):
+    # Do NOT call this with untrusted data in real apps
+    return pickle.loads(s)
+
+# 4) hard-coded credential (Semgrep will flag patterns like 'password = "..."')
+API_KEY = "hardcoded_api_key_12345"
+
+if __name__ == "__main__":
+    print("This file is only for static-analysis testing. Do not run untrusted code.")
+
+TASK:
+- Confirm if the vulnerability exists at the mentioned location.
+- Compare the entire file's logic with and without the vulnerability.
+- Update the code to remove the vulnerability while preserving the logic of the file.
+- After modification, ensure the main code logic still works and the vulnerability is removed.
+- Do NOT introduce new features or change other logic. Only resolve the specified vulnerability.
+- CRITICAL: Respond with ONLY the full, updated contents of the Python file as valid code.
+- ABSOLUTELY NO markdown code fences (``````python), or triple quotes (''').
+- NO explanations, wrappers, or additional text BEFORE or AFTER the code.
+- At the VERY END of the file ONLY, append this exact Python comment block:
+  # AGENT FIX SUMMARY:
+  # Vulnerability fixed: [brief description]
+  # Changes made: [brief changes]
+  # Logic preserved: [why original logic works]
+- Your response must be parseable Python code from line 1 to final comment.

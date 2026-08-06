@@ -1,0 +1,71 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/611.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=xxe
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+# Verification:    XXE sinks verified from CodeQL standard libraries and OWASP XXE Prevention Cheat Sheet.
+
+rule_id: python_xxe
+language: python
+vuln_class: XXE
+severity: High
+cwe: CWE-611
+owasp: A05:2021-Security Misconfiguration
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: XML External Entity (XXE) Injection via unsafe XML parser
+message: |-
+  The application parses XML input using an unsafe configuration. An attacker can include external entities in the XML document, leading to local file disclosure, SSRF, or denial of service.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- xml.etree.ElementTree.parse(
+- lxml.etree.parse(
+- xml.sax.parse(
+- xml.dom.minidom.parse(
+sanitizers:
+- defusedxml.ElementTree.parse(
+remediation: |-
+  Use defusedxml instead of standard XML libraries to parse untrusted XML data.
+
+  UNSAFE:
+    import xml.etree.ElementTree as ET
+    ET.parse(request.data)
+
+  SAFE:
+    import defusedxml.ElementTree as ET
+    ET.parse(request.data)

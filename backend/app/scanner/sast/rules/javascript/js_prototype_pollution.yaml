@@ -1,0 +1,54 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/1321.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/javascript/
+# Semgrep Source:  https://semgrep.dev/r?q=prototype+pollution
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Prototype_Pollution_Prevention_Cheat_Sheet.html
+# Verification:    Prototype pollution sinks (Object.assign, merge, defaultsDeep) verified from CodeQL JS standard libraries.
+
+rule_id: js_prototype_pollution
+language: javascript
+vuln_class: Prototype Pollution
+severity: High
+cwe: CWE-1321
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H
+confidence: Confirmed
+issue: Prototype Pollution via recursive merge
+message: |-
+  User input is merged into objects without preventing modifications to Object.prototype. Attackers can pollute the prototype chain, leading to logic bypasses, DoS, or even RCE if the polluted property is later evaluated.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- Object.assign(
+- _.merge(
+- _.extend(
+- _.defaultsDeep(
+- jQuery.extend(
+- merge(
+- extend(
+sanitizers: []
+remediation: |-
+  Use safe object merging functions that explicitly block the '__proto__' or 'constructor' keys, or create objects without prototypes using Object.create(null).
+
+  UNSAFE:
+    _.merge(target, req.body)
+
+  SAFE:
+    // Validate input schema or use a secure merge library that drops __proto__

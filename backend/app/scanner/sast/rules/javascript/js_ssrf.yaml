@@ -1,0 +1,59 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/918.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=ssrf
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+# Verification:    SSRF sinks verified from CodeQL standard libraries and official HTTP library documentation.
+
+rule_id: js_ssrf
+language: javascript
+vuln_class: SSRF
+severity: High
+cwe: CWE-918
+owasp: A10:2021-Server-Side Request Forgery
+cvss_score: 8.6
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N
+confidence: Confirmed
+issue: Server-Side Request Forgery via HTTP clients
+message: |-
+  User input constructs a URL that the server requests. Attackers can scan internal networks, access internal services (like AWS metadata), or bypass firewalls.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- http.get(
+- http.request(
+- https.get(
+- https.request(
+- axios.get(
+- axios.post(
+- axios.request(
+- fetch(
+- node-fetch(
+- got(
+- request(
+- superagent.get(
+sanitizers: []
+remediation: |-
+  Validate requested URLs against a strict allowlist of allowed hostnames. Do not allow users to specify arbitrary URLs to fetch.
+
+  UNSAFE:
+    axios.get(req.query.url)
+
+  SAFE:
+    if (ALLOWED_URLS.includes(req.query.url)) { axios.get(req.query.url); }

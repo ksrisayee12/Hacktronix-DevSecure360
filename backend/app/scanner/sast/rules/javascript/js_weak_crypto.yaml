@@ -1,0 +1,39 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/327.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=weak+crypto
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+# Verification:    Weak cryptographic function calls verified from CodeQL standard libraries and NIST recommendations.
+
+rule_id: js_weak_crypto
+language: javascript
+vuln_class: Weak Crypto
+severity: Medium
+cwe: CWE-328
+owasp: A02:2021-Cryptographic Failures
+cvss_score: 5.9
+cvss_vector: CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Use of Weak Cryptographic Algorithms
+message: |-
+  The application uses weak cryptographic algorithms like MD5 or SHA1, or insecure random number generators like Math.random(). These can be easily compromised by modern attackers.
+sources: []
+sinks:
+- crypto.createHash('md5'
+- crypto.createHash('sha1'
+- crypto.createCipher('des'
+- crypto.createCipher('rc4'
+- Math.random(
+sanitizers:
+- crypto.createHash('sha256'
+- crypto.createHash('sha512'
+- crypto.randomBytes(
+- crypto.randomFillSync(
+remediation: |-
+  Use modern algorithms like SHA-256 or AES-GCM. For cryptographic randomness, use crypto.randomBytes() instead of Math.random().
+
+  UNSAFE:
+    crypto.createHash('md5')
+
+  SAFE:
+    crypto.createHash('sha256')

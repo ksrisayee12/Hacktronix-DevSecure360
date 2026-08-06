@@ -1,0 +1,72 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/117.html
+# CodeQL Source:   Not applicable — pattern-based log sink detection
+# Semgrep Source:  https://semgrep.dev/r?q=log+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+# Verification:    Log injection sinks verified from Semgrep registry and official logging library documentation.
+
+rule_id: python_log_injection
+language: python
+vuln_class: Log Injection
+severity: Medium
+cwe: CWE-117
+owasp: A09:2021-Security Logging and Monitoring Failures
+cvss_score: 5.3
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N
+confidence: Confirmed
+issue: Log Injection via logging module
+message: |-
+  User input is directly written to log files without sanitization. An attacker can forge log entries, inject CRLF characters to manipulate log structure, or hide malicious activities.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- logging.debug(
+- logging.info(
+- logging.warning(
+- logging.error(
+- logging.critical(
+- logging.log(
+- log.info(
+- log.error(
+sanitizers: []
+remediation: |-
+  Sanitize user input before logging it, particularly by stripping newline characters (CR/LF) and encoding special characters, or use structured logging (JSON) to separate data from log metadata.
+
+  UNSAFE:
+    logging.info('User failed login: ' + username)
+
+  SAFE:
+    logging.info('User failed login: %s', username.replace('\n', ''))

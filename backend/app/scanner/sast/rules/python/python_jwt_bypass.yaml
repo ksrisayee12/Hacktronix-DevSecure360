@@ -1,0 +1,67 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/287.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/python/semmle/python/security/dataflow/JwtNoneAlgorithm.qll
+# Semgrep Source:  https://semgrep.dev/r/python.jwt.security.jwt-none-alg
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html
+# Verification:    jwt.decode and jose.jwt.decode without explicit algorithms list are known vulnerabilities in Python JWT libraries.
+
+rule_id: python_jwt_bypass
+language: python
+vuln_class: JWT Bypass
+severity: Critical
+cwe: CWE-287
+owasp: A07:2021-Identification and Authentication Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: JWT signature bypass via 'none' algorithm in jwt.decode()
+message: |-
+  The application decodes JSON Web Tokens (JWT) without explicitly specifying the allowed algorithms or by explicitly permitting the 'none' algorithm. Attackers can forge tokens with the 'none' algorithm to bypass authentication completely.
+sources:
+- request.args.get(
+- request.args[
+- request.form.get(
+- request.form[
+- request.json
+- request.get_json(
+- request.data
+- request.values.get(
+- request.values[
+- request.cookies.get(
+- request.cookies[
+- request.headers.get(
+- request.headers[
+- request.files.get(
+- request.stream
+- request.GET.get(
+- request.GET[
+- request.POST.get(
+- request.POST[
+- request.body
+- request.META.get(
+- request.COOKIES.get(
+- request.FILES.get(
+- Query(
+- Body(
+- Form(
+- Path(
+- Header(
+- Cookie(
+- os.environ.get(
+- os.environ[
+- os.getenv(
+- sys.argv[
+- input(
+sinks:
+- jwt.decode(
+- jose.jwt.decode(
+sanitizers: []
+remediation: |-
+  Always explicitly restrict allowed algorithms when decoding JWTs to prevent the 'none' algorithm attack. See OWASP JSON Web Token Cheat Sheet for complete guidance.
+
+  UNSAFE:
+    payload = jwt.decode(token, secret_key)
+    payload = jwt.decode(token, options={"verify_signature": False})
+
+  SAFE:
+    payload = jwt.decode(token, secret_key, algorithms=["HS256"])

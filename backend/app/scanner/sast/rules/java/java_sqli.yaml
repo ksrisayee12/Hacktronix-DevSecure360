@@ -1,0 +1,67 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/89.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=sql+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html
+# Verification:    SQL injection sinks verified from CodeQL standard libraries and Semgrep registry for the respective language.
+
+rule_id: java_sqli
+language: java
+vuln_class: SQLi
+severity: Critical
+cwe: CWE-89
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: SQL Injection via unparameterized JDBC/JPA queries
+message: |-
+  User-controlled data is concatenated into a SQL or JPQL query string. Attackers can inject SQL syntax to bypass authentication, read unauthorized records, or execute arbitrary database commands.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- statement.execute(
+- statement.executeQuery(
+- statement.executeUpdate(
+- preparedStatement.execute(
+- connection.createStatement(
+- entityManager.createNativeQuery(
+- entityManager.createQuery(
+- session.createQuery(
+- session.createSQLQuery(
+- jdbcTemplate.execute(
+- jdbcTemplate.query(
+- jdbcTemplate.queryForObject(
+- jdbcTemplate.update(
+sanitizers:
+- prepareStatement(
+- PreparedStatement
+- setString(
+- setInt(
+- setLong(
+- '@Query'
+- NamedParameterJdbcTemplate
+remediation: |-
+  Use parameterized queries via PreparedStatement or use safe ORM methods (like JPA named parameters). Never concatenate user input directly into SQL strings.
+
+  UNSAFE:
+    String query = "SELECT * FROM users WHERE name='" + user + "'";
+    statement.executeQuery(query);
+
+  SAFE:
+    PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE name=?");
+    ps.setString(1, user);
+    ps.executeQuery();

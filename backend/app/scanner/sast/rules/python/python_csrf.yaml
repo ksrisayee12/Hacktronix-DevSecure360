@@ -1,0 +1,39 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/352.html
+# CodeQL Source:   Not applicable — pattern-based rule
+# Semgrep Source:  https://semgrep.dev/r/python.flask.security.wtf-csrf-disabled
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+# Verification:    @app.route without CSRFProtect initialization indicates missing CSRF token defense in Flask.
+
+rule_id: python_csrf
+language: python
+vuln_class: CSRF
+severity: High
+cwe: CWE-352
+owasp: A01:2021-Broken Access Control
+cvss_score: 8.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+confidence: Tentative
+issue: Cross-Site Request Forgery via unprotected Flask route without CSRFProtect middleware
+message: |-
+  The application does not implement CSRF protections. State-changing HTTP handlers (e.g., POST, PUT, DELETE) registered without CSRF protection (like Flask-WTF's CSRFProtect) are vulnerable to cross-site request forgery. Attackers can trick authenticated users into executing unwanted actions. This rule uses heuristic detection.
+sources: []
+sinks:
+- '@app.route('
+- '@app.post('
+- '@app.put('
+- '@app.delete('
+- '@app.patch('
+sanitizers:
+- CSRFProtect
+- csrf.protect()
+- WTF_CSRF_ENABLED
+remediation: |-
+  Implement CSRF protection by requiring unpredictable tokens on state-changing requests, using established middleware like Flask-WTF. See OWASP Cross-Site Request Forgery Prevention Cheat Sheet for complete guidance.
+
+  UNSAFE:
+    app = Flask(__name__)
+
+  SAFE:
+    from flask_wtf.csrf import CSRFProtect
+    csrf = CSRFProtect(app)

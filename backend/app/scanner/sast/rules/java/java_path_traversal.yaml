@@ -1,0 +1,54 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/22.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=path+traversal
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
+# Verification:    Path traversal sinks verified from CodeQL standard libraries and Semgrep registry.
+
+rule_id: java_path_traversal
+language: java
+vuln_class: Path Traversal
+severity: High
+cwe: CWE-22
+owasp: A01:2021-Broken Access Control
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Path Traversal via File IO
+message: |-
+  User input dictates the file path used in File objects or streams. Attackers can use traversal sequences ('../') to read or write files outside the intended directory.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- new File(
+- Paths.get(
+- FileInputStream(
+- FileOutputStream(
+- FileReader(
+- FileWriter(
+- Files.readAllBytes(
+- Files.write(
+sanitizers: []
+remediation: |-
+  Validate file paths to ensure they reside within the expected base directory. Check the canonical path of the resolved file against the base directory.
+
+  UNSAFE:
+    File f = new File("/uploads/" + request.getParameter("file"));
+
+  SAFE:
+    File baseDir = new File("/uploads/");
+    File f = new File(baseDir, request.getParameter("file"));
+    if (!f.getCanonicalPath().startsWith(baseDir.getCanonicalPath())) throw new Exception();

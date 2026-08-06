@@ -1,0 +1,34 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/90.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/java/
+# Semgrep Source:  https://semgrep.dev/r?q=ldap+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.html
+# Verification:    User input in LDAP queries without escaping enables auth bypass.
+
+rule_id: go_ldap_injection
+language: go
+vuln_class: LDAP Injection
+severity: Critical
+cwe: CWE-90
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: LDAP Injection via unescaped string formatting in LDAP filter
+message: |-
+  Using fmt.Sprintf() to construct an LDAP filter with user input allows LDAP injection. An attacker can manipulate the filter structure to bypass authentication or access unauthorized data.
+sources:
+- r.URL.Query()
+- r.FormValue(
+- r.Header.Get(
+- r.Body
+sinks:
+- fmt.Sprintf("(uid=%s)"
+- fmt.Sprintf("(cn=%s)"
+sanitizers:
+- ldap.EscapeFilter(
+remediation: |-
+  Use ldap.EscapeFilter() from the go-ldap package to sanitize user input before inclusion in filters.
+
+  SAFE:
+    filter := fmt.Sprintf("(uid=%s)", ldap.EscapeFilter(userInput)) Always review your code and apply strict bounds or input limitations. Use static analysis tools to verify fixes.

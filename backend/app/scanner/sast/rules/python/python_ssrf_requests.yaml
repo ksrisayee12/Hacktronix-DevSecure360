@@ -1,0 +1,33 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/918.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=ssrf
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+# Verification:    User-controlled URLs passed to HTTP clients lead to SSRF, allowing internal network scanning.
+
+rule_id: python_ssrf_requests
+language: python
+vuln_class: SSRF
+severity: High
+cwe: CWE-918
+owasp: A01:2021-Broken Access Control
+cvss_score: 8.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N
+confidence: Confirmed
+issue: Server-Side Request Forgery (SSRF) via requests module
+message: |-
+  Passing unvalidated user input to requests.get() or requests.post() enables SSRF. The application can be used as a proxy to attack internal systems or read cloud metadata (e.g., AWS IMDS).
+sources:
+- request.args
+- request.form
+- request.data
+- request.json
+- request.GET
+- request.POST
+sinks:
+- requests.get(
+- requests.post(
+sanitizers:
+- urllib.parse
+remediation: |-
+  Validate the URL scheme and hostname. Ensure the resolved IP address does not fall into private network ranges (e.g., using the ipaddress module). Always review your code and apply strict bounds or input limitations. Use static analysis tools to verify fixes.

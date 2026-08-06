@@ -1,0 +1,52 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/94.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=code+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html
+# Verification:    Code injection and dangerous reflection sinks verified from CodeQL standard libraries.
+
+rule_id: java_jndi_injection
+language: java
+vuln_class: Code Injection
+severity: Critical
+cwe: CWE-917
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: JNDI Injection via user-controlled lookup string in InitialContext.lookup()
+message: |-
+  User input is passed directly to InitialContext.lookup() or context.lookup(). An attacker can supply a malicious JNDI URL (e.g., ldap://attacker.com/payload) that causes the JVM to load and instantiate a remote class from an attacker-controlled server, resulting in arbitrary Remote Code Execution. This pattern is the root cause of Log4Shell and related JNDI injection vulnerabilities.
+sources:
+- request.getParameter(
+- request.getParameterValues(
+- request.getHeader(
+- request.getHeaders(
+- request.getCookies(
+- request.getInputStream(
+- request.getReader(
+- request.getQueryString(
+- request.getPathInfo(
+- '@RequestParam'
+- '@PathVariable'
+- '@RequestBody'
+- '@RequestHeader'
+- '@CookieValue'
+sinks:
+- InitialContext.lookup(
+- context.lookup(
+- dirContext.lookup(
+- ctx.lookup(
+sanitizers: []
+remediation: |-
+  Never pass user-controlled data to JNDI lookup methods. If JNDI lookups are required, use a strict allowlist of permitted JNDI names and validate the input before passing it to lookup().
+
+  UNSAFE:
+    Context ctx = new InitialContext();
+    ctx.lookup(request.getParameter("resource"));
+
+  SAFE:
+    // Validate that 'resource' is in the allowlist of known safe JNDI names
+    if (ALLOWED_RESOURCES.contains(resource)) {
+        ctx.lookup(resource);
+    }

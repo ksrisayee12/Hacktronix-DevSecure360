@@ -1,0 +1,50 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/120.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/cpp/
+# Semgrep Source:  https://semgrep.dev/r?q=buffer+overflow
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html
+# Verification:    Buffer overflow sinks (strcpy, strcat, gets, memcpy without size check) verified from CodeQL C/C++ standard libraries.
+
+rule_id: cpp_buffer_overflow
+language: cpp
+vuln_class: Buffer Overflow
+severity: High
+cwe: CWE-119
+owasp: A03:2021-Injection
+cvss_score: 8.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Tentative
+issue: Buffer Overflow via legacy C functions
+message: |-
+  User input is copied into a buffer using legacy C functions in a C++ program. Attackers can overflow the buffer to overwrite memory.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- strcpy(
+- strcat(
+- sprintf(
+- vsprintf(
+- gets(
+sanitizers:
+- std::string
+- std::vector<char>
+- std::array
+- std::copy_n(
+remediation: |-
+  Avoid using legacy C string functions (like strcpy) and raw char arrays in C++. Use safe C++ alternatives like std::string or std::vector which manage memory automatically.
+
+  UNSAFE:
+    char buf[256];
+    strcpy(buf, argv[1]);
+
+  SAFE:
+    std::string buf = argv[1];

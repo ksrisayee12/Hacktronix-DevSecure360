@@ -1,0 +1,33 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/614.html
+# CodeQL Source:   Not applicable — pattern-based rule
+# Semgrep Source:  https://semgrep.dev/r/python.flask.security.insecure-cookie
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+# Verification:    set_cookie without secure=True or httponly=True exposes tokens to interception or XSS.
+
+rule_id: python_cookie_security
+language: python
+vuln_class: Cookie Security
+severity: Medium
+cwe: CWE-614
+owasp: A05:2021-Security Misconfiguration
+cvss_score: 5.3
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N
+confidence: Tentative
+issue: Insecure cookie configuration via missing Secure or HttpOnly flags in set_cookie()
+message: |-
+  A cookie is being set without both the 'Secure' and 'HttpOnly' flags. The 'Secure' flag ensures the cookie is only transmitted over encrypted connections (HTTPS), preventing interception over unencrypted networks. The 'HttpOnly' flag prevents client-side scripts from accessing the cookie, mitigating the risk of cross-site scripting (XSS) attacks stealing session identifiers.
+sources: []
+sinks:
+- set_cookie(
+sanitizers:
+- httponly=True
+- secure=True
+remediation: |-
+  Configure cookies with Secure and HttpOnly flags. See OWASP Session Management Cheat Sheet for complete guidance.
+
+  UNSAFE:
+    response.set_cookie('session', value)
+
+  SAFE:
+    response.set_cookie('session', value, secure=True, httponly=True, samesite='Strict')

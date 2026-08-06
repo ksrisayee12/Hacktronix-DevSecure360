@@ -1,0 +1,51 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/611.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=xxe
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+# Verification:    XXE sinks verified from CodeQL standard libraries and OWASP XXE Prevention Cheat Sheet.
+
+rule_id: csharp_xxe_xmldoc
+language: csharp
+vuln_class: XXE
+severity: High
+cwe: CWE-611
+owasp: A05:2021-Security Misconfiguration
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: XML External Entity (XXE) Injection
+message: |-
+  User-supplied XML is parsed by an XML parser that has not explicitly disabled external entity resolution (prior to .NET 4.5.2).
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- new XmlDocument(
+- new XmlTextReader(
+- XDocument.Load(
+- XElement.Load(
+- XmlReader.Create(
+sanitizers:
+- XmlReaderSettings DtdProcessing = DtdProcessing.Prohibit
+remediation: |-
+  Explicitly disable DTD processing in XmlReaderSettings when parsing untrusted XML.
+
+  UNSAFE:
+    var doc = new XmlDocument();
+    doc.LoadXml(xml);
+
+  SAFE:
+    var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
+    using (var reader = XmlReader.Create(new StringReader(xml), settings)) {
+        var doc = new XmlDocument();
+        doc.Load(reader);
+    }

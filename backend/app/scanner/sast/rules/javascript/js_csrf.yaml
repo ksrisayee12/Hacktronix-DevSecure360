@@ -1,0 +1,41 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/352.html
+# CodeQL Source:   Not applicable — pattern-based rule
+# Semgrep Source:  https://semgrep.dev/r/javascript.express.security.csurf-disabled
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+# Verification:    State-changing express routes without CSRF middleware are a common vulnerable pattern.
+
+rule_id: js_csrf
+language: javascript
+vuln_class: CSRF
+severity: High
+cwe: CWE-352
+owasp: A01:2021-Broken Access Control
+cvss_score: 8.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+confidence: Tentative
+issue: Cross-Site Request Forgery via Express route without CSRF middleware
+message: |-
+  The application may not implement CSRF protections. State-changing HTTP handlers (e.g., app.post, router.put) registered without CSRF middleware (like csurf or its modern replacements) are vulnerable to cross-site request forgery. Note: this rule uses heuristic detection.
+sources: []
+sinks:
+- app.post(
+- app.put(
+- app.delete(
+- app.patch(
+- router.post(
+- router.put(
+- router.delete(
+- router.patch(
+sanitizers:
+- csurf
+- csrf()
+- csrfProtection
+remediation: |-
+  Implement CSRF protection by requiring unpredictable tokens on state-changing requests, using established middleware. See OWASP Cross-Site Request Forgery Prevention Cheat Sheet for complete guidance.
+
+  UNSAFE:
+    app.post('/transfer', (req, res) => { ... })
+
+  SAFE:
+    app.post('/transfer', csrfProtection, (req, res) => { ... })

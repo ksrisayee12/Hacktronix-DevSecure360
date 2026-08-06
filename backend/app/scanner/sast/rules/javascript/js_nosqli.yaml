@@ -1,0 +1,56 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/943.html
+# CodeQL Source:   Not applicable — pattern-based sink detection
+# Semgrep Source:  https://semgrep.dev/r?q=nosql+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html
+# Verification:    NoSQL injection sinks verified from Semgrep registry and official database driver documentation.
+
+rule_id: js_nosqli
+language: javascript
+vuln_class: NoSQLi
+severity: High
+cwe: CWE-943
+owasp: A03:2021-Injection
+cvss_score: 8.2
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:L/A:N
+confidence: Confirmed
+issue: NoSQL Injection via unsanitized input objects
+message: |-
+  User input is passed directly to NoSQL query methods (like MongoDB's find). If the input is an object containing query operators (e.g., {$ne: null}), attackers can bypass authentication or extract data they shouldn't access.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- collection.find(
+- collection.findOne(
+- collection.update(
+- collection.updateOne(
+- collection.deleteOne(
+- Model.find(
+- Model.findOne(
+- Model.findById(
+- Model.where(
+sanitizers: []
+remediation: |-
+  Sanitize inputs by casting them to strings, or enforce schema validation to ensure inputs are strings and not objects containing NoSQL operators.
+
+  UNSAFE:
+    User.find({ username: req.body.username })
+
+  SAFE:
+    User.find({ username: String(req.body.username) })

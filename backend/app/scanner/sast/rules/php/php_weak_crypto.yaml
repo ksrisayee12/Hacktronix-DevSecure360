@@ -1,0 +1,41 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/327.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=weak+crypto
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+# Verification:    Weak cryptographic function calls verified from CodeQL standard libraries and NIST recommendations.
+
+rule_id: php_weak_crypto
+language: php
+vuln_class: Weak Crypto
+severity: Medium
+cwe: CWE-328
+owasp: A02:2021-Cryptographic Failures
+cvss_score: 5.9
+cvss_vector: CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Use of Weak Cryptographic Algorithms (MD5/SHA1)
+message: |-
+  The application uses weak cryptographic hash functions like MD5 or SHA1, or weak PRNGs like rand() or mt_rand().
+sources: []
+sinks:
+- md5(
+- sha1(
+- rand(
+- mt_rand(
+- uniqid(
+- mcrypt_encrypt(
+sanitizers:
+- hash('sha256'
+- hash('sha512'
+- password_hash(
+- random_bytes(
+- random_int(
+remediation: |-
+  Use modern algorithms like SHA-256 for hashing, password_hash() for passwords, and random_bytes() for secure random numbers.
+
+  UNSAFE:
+    $hash = md5($password);
+
+  SAFE:
+    $hash = password_hash($password, PASSWORD_DEFAULT);

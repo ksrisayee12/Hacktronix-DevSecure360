@@ -1,0 +1,44 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/327.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=weak+crypto
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+# Verification:    Weak cryptographic function calls verified from CodeQL standard libraries and NIST recommendations.
+
+rule_id: java_weak_crypto
+language: java
+vuln_class: Weak Crypto
+severity: Medium
+cwe: CWE-328
+owasp: A02:2021-Cryptographic Failures
+cvss_score: 5.9
+cvss_vector: CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N
+confidence: Confirmed
+issue: Use of Weak Cryptographic Algorithms (MD5/SHA1/DES)
+message: |-
+  The application uses deprecated cryptographic algorithms (MD5, SHA1, DES) or insecure random number generators (Math.random). These algorithms can be compromised by attackers.
+sources: []
+sinks:
+- MessageDigest.getInstance("MD5"
+- MessageDigest.getInstance("SHA-1"
+- MessageDigest.getInstance("SHA1"
+- Cipher.getInstance("DES"
+- Cipher.getInstance("DESede"
+- Cipher.getInstance("RC4"
+- Cipher.getInstance("AES/ECB"
+- new Random(
+- Math.random(
+sanitizers:
+- MessageDigest.getInstance("SHA-256"
+- MessageDigest.getInstance("SHA-512"
+- MessageDigest.getInstance("SHA3-256"
+- Cipher.getInstance("AES/GCM"
+- SecureRandom(
+remediation: |-
+  Use modern algorithms like SHA-256 or AES-GCM. For cryptographic randomness, use java.security.SecureRandom instead of java.util.Random.
+
+  UNSAFE:
+    MessageDigest md = MessageDigest.getInstance("MD5");
+
+  SAFE:
+    MessageDigest md = MessageDigest.getInstance("SHA-256");

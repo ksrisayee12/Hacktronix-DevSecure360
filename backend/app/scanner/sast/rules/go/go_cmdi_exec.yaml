@@ -1,0 +1,41 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/78.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=command+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html
+# Verification:    Command injection sinks verified from CodeQL standard libraries and Semgrep registry.
+
+rule_id: go_cmdi_exec
+language: go
+vuln_class: CMDi
+severity: Critical
+cwe: CWE-78
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Command Injection via os/exec
+message: |-
+  User input is passed to os/exec.Command or exec.CommandContext. If input is passed to a shell (e.g., 'sh -c'), an attacker can execute arbitrary OS commands.
+sources:
+- http.Request
+- r.URL.Query().Get(
+- r.FormValue(
+- r.PostFormValue(
+- r.Header.Get(
+- r.Cookie(
+- r.Body
+- os.Getenv(
+- os.Args[
+sinks:
+- exec.Command(
+- exec.CommandContext(
+sanitizers: []
+remediation: |-
+  Pass arguments as separate strings to exec.Command rather than routing them through a shell like 'sh' or 'bash'.
+
+  UNSAFE:
+    exec.Command("sh", "-c", "ping -c 1 " + ip)
+
+  SAFE:
+    exec.Command("ping", "-c", "1", ip)

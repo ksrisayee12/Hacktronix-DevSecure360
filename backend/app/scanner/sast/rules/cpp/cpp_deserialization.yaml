@@ -1,0 +1,45 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/502.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=deserialization
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html
+# Verification:    Deserialization sinks verified from CodeQL standard libraries and OWASP Deserialization Cheat Sheet.
+
+rule_id: cpp_deserialization
+language: cpp
+vuln_class: Deserialization
+severity: Critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Insecure Deserialization via Boost or Cereal
+message: |-
+  Untrusted data is deserialized using Boost.Serialization or Cereal. Attackers can execute arbitrary code upon deserialization if object types are manipulated.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- boost::archive::text_iarchive
+- boost::archive::binary_iarchive
+- cereal::JSONInputArchive
+- cereal::BinaryInputArchive
+sanitizers: []
+remediation: |-
+  Do not deserialize untrusted data using libraries that support polymorphic types without strict type checking. Prefer simple data formats like JSON without object graphs.
+
+  UNSAFE:
+    boost::archive::text_iarchive ia(is);
+    ia >> myObject;
+
+  SAFE:
+    // Parse JSON explicitly instead of automatic object graph deserialization

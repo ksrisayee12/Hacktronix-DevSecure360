@@ -1,0 +1,45 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/94.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=code+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html
+# Verification:    Code injection and dangerous reflection sinks verified from CodeQL standard libraries.
+
+rule_id: php_code_injection
+language: php
+vuln_class: Code Injection
+severity: Critical
+cwe: CWE-94
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Code Injection via eval/assert
+message: |-
+  User input is passed to eval() or assert(). Attackers can inject arbitrary PHP code, leading to complete Remote Code Execution.
+sources:
+- $_GET[
+- $_POST[
+- $_REQUEST[
+- $_COOKIE[
+- $_FILES[
+- $_SERVER[
+- $HTTP_GET_VARS[
+- $HTTP_POST_VARS[
+- $HTTP_COOKIE_VARS[
+- $HTTP_RAW_POST_DATA
+- file_get_contents('php://input')
+sinks:
+- eval(
+- assert(
+- create_function(
+- preg_replace( (with /e modifier)
+sanitizers: []
+remediation: |-
+  Never pass user input into eval() or assert(). Refactor the logic to avoid dynamic code evaluation entirely.
+
+  UNSAFE:
+    eval("return " . $_GET['math'] . ";");
+
+  SAFE:
+    // Use an explicit math parsing library instead of eval

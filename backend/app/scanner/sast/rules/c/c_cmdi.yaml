@@ -1,0 +1,48 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/78.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=command+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html
+# Verification:    Command injection sinks verified from CodeQL standard libraries and Semgrep registry.
+
+rule_id: c_cmdi
+language: c
+vuln_class: CMDi
+severity: Critical
+cwe: CWE-78
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Command Injection via system or exec
+message: |-
+  User input is passed directly to system() or popen(). Attackers can append shell commands to gain Remote Code Execution on the server.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- system(
+- popen(
+- execl(
+- execlp(
+- execle(
+- execv(
+- execvp(
+- execve(
+sanitizers: []
+remediation: |-
+  Avoid using system() which spawns a shell. Use exec() family functions and pass arguments as an array of strings, properly sanitizing any inputs.
+
+  UNSAFE:
+    system(command_string);
+
+  SAFE:
+    execvp("ping", args);

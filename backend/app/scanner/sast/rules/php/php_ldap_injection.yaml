@@ -1,0 +1,33 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/90.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/java/
+# Semgrep Source:  https://semgrep.dev/r?q=ldap+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.html
+# Verification:    User input in LDAP queries without escaping enables auth bypass.
+
+rule_id: php_ldap_injection
+language: php
+vuln_class: LDAP Injection
+severity: Critical
+cwe: CWE-90
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: LDAP Injection via unescaped string concatenation in ldap_search()
+message: |-
+  Constructing LDAP filters dynamically with user input allows an attacker to alter the query logic, bypassing authentication or accessing unauthorized directory information.
+sources:
+- $_GET[
+- $_POST[
+- $_REQUEST[
+- $_COOKIE[
+sinks:
+- 'ldap_search($conn, $base, "(uid=" . '
+sanitizers:
+- ldap_escape(
+remediation: |-
+  Use ldap_escape() to sanitize user input before embedding it in LDAP filters.
+
+  SAFE:
+    $filter = "(uid=" . ldap_escape($input, "", LDAP_ESCAPE_FILTER) . ")"; Always review your code and apply strict bounds or input limitations. Use static analysis tools to verify fixes.

@@ -1,0 +1,34 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/1333.html
+# CodeQL Source:   Not applicable — pattern-based rule
+# Semgrep Source:  https://semgrep.dev/r/javascript.lang.security.audit.catastrophic-backtracking
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Regular_Expression_Denial_of_Service_Prevention_Cheat_Sheet.html
+# Verification:    RegExp evaluation and string matching functions execute regular expressions and can be vulnerable to catastrophic backtracking.
+
+rule_id: js_redos
+language: javascript
+vuln_class: ReDoS
+severity: High
+cwe: CWE-1333
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+confidence: Tentative
+issue: Regular Expression Denial of Service (ReDoS) via RegExp
+message: |-
+  A potentially catastrophic regular expression contains nested quantifiers or overlapping alternatives. If evaluated against a crafted long input string, it can cause the regex engine to backtrack exponentially, consuming all CPU resources.
+sources: []
+sinks:
+- new RegExp(
+- .match(
+- .search(
+- .replace(
+sanitizers: []
+remediation: |-
+  Avoid nested quantifiers like (a+)+ or overlapping alternatives like (a|a)+ in regular expressions. See OWASP Regular Expression Denial of Service Prevention Cheat Sheet for complete guidance.
+
+  UNSAFE:
+    const regex = new RegExp('^(a+)+$');
+
+  SAFE:
+    // Use a simpler, non-backtracking regex or limit input length

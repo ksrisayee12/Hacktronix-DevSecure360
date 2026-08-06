@@ -1,0 +1,44 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/502.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=deserialization
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html
+# Verification:    Deserialization sinks verified from CodeQL standard libraries and OWASP Deserialization Cheat Sheet.
+
+rule_id: csharp_deser_jsonnet
+language: csharp
+vuln_class: Deserialization
+severity: Critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Insecure Deserialization via TypeNameHandling
+message: |-
+  Untrusted data is deserialized using JsonConvert with TypeNameHandling enabled. Attackers can execute arbitrary code by supplying malicious type information.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- JsonConvert.DeserializeObject(
+sanitizers:
+- JsonConvert.DeserializeObject<KnownType>(
+- JsonSerializer.Deserialize<KnownType>(
+remediation: |-
+  Do not use TypeNameHandling.All or TypeNameHandling.Auto when deserializing untrusted JSON. Deserialize into concrete, known types.
+
+  UNSAFE:
+    var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
+    JsonConvert.DeserializeObject(json, settings);
+
+  SAFE:
+    JsonConvert.DeserializeObject<MySafeClass>(json);

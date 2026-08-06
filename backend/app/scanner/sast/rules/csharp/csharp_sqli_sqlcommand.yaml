@@ -1,0 +1,53 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/89.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=sql+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html
+# Verification:    SQL injection sinks verified from CodeQL standard libraries and Semgrep registry for the respective language.
+
+rule_id: csharp_sqli_sqlcommand
+language: csharp
+vuln_class: SQLi
+severity: Critical
+cwe: CWE-89
+owasp: A03:2021-Injection
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: SQL Injection via SqlCommand
+message: |-
+  User-controlled data is concatenated into a SQL command string. Attackers can inject SQL syntax to bypass authentication or access unauthorized data.
+sources:
+- Request.QueryString[
+- Request.Form[
+- Request.Cookies[
+- Request.Headers[
+- Request.Params[
+- Request.Item[
+- HttpContext.Request.Query[
+- HttpContext.Request.Form[
+- Environment.GetEnvironmentVariable(
+- Environment.GetCommandLineArgs(
+sinks:
+- new SqlCommand(
+- SqlCommand(
+- .ExecuteReader(
+- .ExecuteNonQuery(
+- .ExecuteScalar(
+- .ExecuteReaderAsync(
+- .ExecuteNonQueryAsync(
+- new NpgsqlCommand(
+- MySqlCommand(
+sanitizers:
+- SqlParameter(
+- cmd.Parameters.Add(
+- cmd.Parameters.AddWithValue(
+remediation: |-
+  Use parameterized queries with SqlParameter instead of string concatenation. The database driver safely escapes the parameters.
+
+  UNSAFE:
+    var cmd = new SqlCommand("SELECT * FROM Users WHERE Name = '" + name + "'");
+
+  SAFE:
+    var cmd = new SqlCommand("SELECT * FROM Users WHERE Name = @name");
+    cmd.Parameters.AddWithValue("@name", name);

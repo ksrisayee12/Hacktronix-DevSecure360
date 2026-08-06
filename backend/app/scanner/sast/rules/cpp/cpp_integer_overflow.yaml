@@ -1,0 +1,45 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/190.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/cpp/
+# Semgrep Source:  Not applicable — CFG-based pattern detection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/C-Based_Toolchain_Hardening_Cheat_Sheet.html
+# Verification:    Integer overflow before memory allocation verified from CodeQL C/C++ standard libraries. Rule is Tentative.
+
+rule_id: cpp_integer_overflow
+language: cpp
+vuln_class: Integer Overflow
+severity: High
+cwe: CWE-190
+owasp: A03:2021-Injection
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+confidence: Tentative
+issue: Integer Overflow or Wraparound
+message: |-
+  User-controlled integer values are used in arithmetic operations without bounds checking. Attackers can trigger overflows or underflows.
+sources:
+- gets(
+- fgets(
+- scanf(
+- fscanf(
+- sscanf(
+- read(
+- recv(
+- recvfrom(
+- getenv(
+- argv[
+sinks:
+- 'new '
+- new[]
+- std::vector
+- std::malloc(
+sanitizers: []
+remediation: |-
+  Validate integer inputs before performing arithmetic operations. Consider using safe integer libraries or checking bounds against std::numeric_limits.
+
+  UNSAFE:
+    size_t total = count * size;
+    char* buf = new char[total];
+
+  SAFE:
+    if (count > MAX_COUNT) throw std::overflow_error("Count too large");

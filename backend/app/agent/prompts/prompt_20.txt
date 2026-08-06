@@ -1,0 +1,67 @@
+Analyze the following code extract and its vulnerability:
+
+File: C:/Users/SRISAYEE/AppData/Local/Temp/tmpnxkww7b1/vuln_flask.py
+Lines: 43 to 43
+
+Vulnerability Description: A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.
+
+Full File Code:
+# vuln_flask.py
+# Run: pip install flask
+from flask import Flask, request, jsonify
+import sqlite3
+import subprocess
+
+app = Flask(__name__)
+
+# Hardcoded secret (Bandit will flag)
+API_KEY = "super-secret-key-123"
+
+# Very small example DB initializer (for local testing)
+def init_db():
+    conn = sqlite3.connect("test.db")
+    conn.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)")
+    conn.commit()
+    conn.close()
+
+@app.route("/user")
+def get_user():
+    # UNSAFE: vulnerable to SQL injection (string concat)
+    user = request.args.get("name", "")
+    conn = sqlite3.connect("test.db")
+    # vulnerable query
+    q = "SELECT id, name, email FROM users WHERE name = '%s'" % user
+    cur = conn.execute(q)
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return jsonify({"id": row[0], "name": row[1], "email": row[2]})
+    return jsonify({"error": "not found"}), 404
+
+@app.route("/run")
+def run_cmd():
+    # UNSAFE: directly uses user input in shell command
+    cmd = request.args.get("cmd", "echo hello")
+    # shell injection vulnerability
+    output = subprocess.check_output(cmd, shell=True, text=True)
+    return jsonify({"out": output})
+
+if __name__ == "__main__":
+    init_db()
+    app.run(port=5000, debug=True)
+
+TASK:
+- Confirm if the vulnerability exists at the mentioned location.
+- Compare the entire file's logic with and without the vulnerability.
+- Update the code to remove the vulnerability while preserving the logic of the file.
+- After modification, ensure the main code logic still works and the vulnerability is removed.
+- Do NOT introduce new features or change other logic. Only resolve the specified vulnerability.
+- CRITICAL: Respond with ONLY the full, updated contents of the Python file as valid code.
+- ABSOLUTELY NO markdown code fences (``````python), or triple quotes (''').
+- NO explanations, wrappers, or additional text BEFORE or AFTER the code.
+- At the VERY END of the file ONLY, append this exact Python comment block:
+  # AGENT FIX SUMMARY:
+  # Vulnerability fixed: [brief description]
+  # Changes made: [brief changes]
+  # Logic preserved: [why original logic works]
+- Your response must be parseable Python code from line 1 to final comment.

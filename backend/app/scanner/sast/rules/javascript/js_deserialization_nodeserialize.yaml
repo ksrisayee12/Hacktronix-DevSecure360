@@ -1,0 +1,49 @@
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/502.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=deserialization
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html
+# Verification:    Deserialization sinks verified from CodeQL standard libraries and OWASP Deserialization Cheat Sheet.
+
+rule_id: js_deserialization_nodeserialize
+language: javascript
+vuln_class: Deserialization
+severity: Critical
+cwe: CWE-502
+owasp: A08:2021-Software and Data Integrity Failures
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+confidence: Confirmed
+issue: Insecure Deserialization via node-serialize
+message: |-
+  Untrusted data is deserialized using node-serialize (unserialize function) or similar insecure deserializers. Because node-serialize supports immediately invoked function expressions (IIFEs) in serialized objects, attackers can craft payloads that execute arbitrary code upon deserialization.
+sources:
+- req.query.
+- req.query[
+- req.body.
+- req.body[
+- req.params.
+- req.params[
+- req.headers[
+- req.cookies.
+- req.cookies[
+- req.get(
+- request.query.
+- request.body.
+- request.params.
+- request.headers[
+- process.env.
+- process.argv[
+- readline.question(
+sinks:
+- serialize.unserialize(
+- unserialize(
+sanitizers: []
+remediation: |-
+  Never use node-serialize or other insecure deserializers on untrusted data. Use safe, standard data formats like JSON (JSON.parse()) which do not support function execution.
+
+  UNSAFE:
+    var obj = serialize.unserialize(req.body.data);
+
+  SAFE:
+    var obj = JSON.parse(req.body.data);
