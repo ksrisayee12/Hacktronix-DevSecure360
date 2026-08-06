@@ -5,7 +5,7 @@ import json
 
 from app.agent.normalizer import normalize_scan_history
 from app.agent.prompt_builder import generate_prompts
-from app.agent.llm_client import run_agent_on_prompts
+from app.agent.gemini_llm_client import run_agent_on_prompts
 
 
 def run_normalizer(scan_history_path: str, normalized_path: str) -> bool:
