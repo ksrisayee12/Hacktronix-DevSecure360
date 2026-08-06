@@ -138,7 +138,8 @@ class DASTEngine:
             logger.info(f"[DAST] Discovered {len(endpoints)} endpoints")
 
             # --- Phase 2: Test each endpoint ---
-            for endpoint in endpoints:
+            for i, endpoint in enumerate(endpoints, 1):
+                logger.info(f"[DAST] Testing endpoint {i}/{len(endpoints)}: {endpoint.method} {endpoint.url}")
                 self._test_endpoint(endpoint, target_url)
 
             # --- Phase 3: CORS check on root ---
@@ -338,7 +339,7 @@ class DASTEngine:
         oob_url = f"{self.OOB_HOST}:{self.OOB_PORT}"
         for payload in cmdi_payloads.get_oob_payloads(oob_url, canary_id):
             self._request(endpoint, param, payload)
-            callback = self.oob.get_callback(canary_id, timeout=6)
+            callback = self.oob.get_callback(canary_id, timeout=0.2)
             if callback:
                 self._add_finding(
                     vuln_class="CMDi",
@@ -389,7 +390,7 @@ class DASTEngine:
             resp = self._request(endpoint, param, payload)
 
             # OOB callback confirmation (most reliable)
-            callback = self.oob.get_callback(canary_id, timeout=5)
+            callback = self.oob.get_callback(canary_id, timeout=0.2)
             if callback:
                 self._add_finding(
                     vuln_class="SSRF",
