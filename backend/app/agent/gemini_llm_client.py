@@ -43,14 +43,15 @@ def read_prompt(prompt_path: str) -> str:
 
 
 def strip_markdown(text: str) -> str:
-    """Robustly remove Markdown code fences from the LLM response."""
+    """Robustly remove Markdown code fences and extract the largest code block."""
     lines = text.splitlines()
     
     has_fences = any(line.strip().startswith("```") for line in lines)
     if not has_fences:
         return text.strip() + "\n"
         
-    code_lines = []
+    blocks = []
+    current_block = []
     in_code_block = False
     
     for line in lines:
@@ -58,16 +59,22 @@ def strip_markdown(text: str) -> str:
         if stripped.startswith("```"):
             if not in_code_block:
                 in_code_block = True
+                current_block = []
                 continue
             else:
-                break
+                in_code_block = False
+                if current_block:
+                    blocks.append("\n".join(current_block))
+                continue
         if in_code_block:
-            code_lines.append(line)
+            current_block.append(line)
             
-    if not code_lines:
+    if not blocks:
         return text.strip() + "\n"
         
-    return "\n".join(code_lines).strip() + "\n"
+    # Return the longest code block (most likely the full patched file)
+    longest_block = max(blocks, key=len)
+    return longest_block.strip() + "\n"
 
 
 def is_valid_response(response_text: str) -> bool:
@@ -96,15 +103,43 @@ def is_valid_response(response_text: str) -> bool:
 
 def call_ollama(prompt: str) -> str:
     """Send the prompt to Ollama LLM, measure time, and receive a response."""
+    
+    # We pass a highly specific system prompt to Ollama
+    system_prompt = (
+        "You are an expert security engineer and developer.\n"
+        "You will be given a vulnerability report and the vulnerable source code.\n"
+        "Your ONLY task is to FIX the vulnerability by rewriting the source code.\n"
+        "CRITICAL INSTRUCTIONS:\n"
+        "1. You MUST return the complete, patched source code file in your response.\n"
+        "2. Do NOT include any conversational text, greetings, or explanations.\n"
+        "3. Do NOT wrap the code in markdown blocks (e.g. no ```javascript).\n"
+        "4. Output ONLY the raw patched code, as it will be written directly to the file on disk."
+    )
+    
+    # Restructure the prompt if it matches our prompt_builder format to be explicitly clear for smaller models
+    if "Full File Code:\n" in prompt:
+        parts = prompt.split("Full File Code:\n")
+        context = parts[0].strip()
+        code = parts[1].strip()
+        
+        action_prompt = (
+            f"VULNERABILITY CONTEXT:\n{context}\n\n"
+            f"VULNERABLE CODE:\n```\n{code}\n```\n\n"
+            f"# INSTRUCTION: Rewrite the 'VULNERABLE CODE' above to fix the vulnerabilities. "
+            f"Output ONLY the complete, raw patched code inside a SINGLE markdown block. Do NOT explain anything."
+        )
+    else:
+        action_prompt = prompt + "\n\n# INSTRUCTION: Rewrite the 'Full File Code' above to fix the vulnerability. Output ONLY the raw patched code."
+    
     url = f"{OLLAMA_BASE_URL}/api/generate"
     payload = {
         "model": OLLAMA_MODEL,
-        "prompt": prompt,
+        "system": system_prompt,
+        "prompt": action_prompt,
         "stream": False,
         "options": {
             "temperature": 0.1,
             "top_p": 0.9,
-            "repeat_penalty": 1.1,
             "num_ctx": 8192
         }
     }

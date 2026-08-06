@@ -81,7 +81,12 @@ export default function Dashboard() {
     );
   }
 
-  const getType = (scan) => scan.scan_type || scan.type || "external";
+  const getType = (scan) => {
+    const t = scan.scan_type || scan.type || "external";
+    if (t === "sast") return "code";
+    if (t === "dast") return "external";
+    return t;
+  };
 
   const codeScanFindings = scanHistory
     .filter((s) => getType(s) === "code")
@@ -144,30 +149,42 @@ export default function Dashboard() {
           <h3 className="text-xl mb-4 font-semibold text-[#F4EBD3] text-center">
             Code Scan Severity
           </h3>
-          <PieChart width={350} height={300}>
-            <Pie data={codeScanData} cx={175} cy={150} outerRadius={100} dataKey="value">
-              {codeScanData.map((entry, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={{ backgroundColor: "#1B3C53", border: "1px solid #456882", color: "#D2C1B6" }} itemStyle={{ color: "#F4EBD3" }} />
-            <Legend wrapperStyle={{ color: "#F4EBD3" }} />
-          </PieChart>
+          {codeScanFindings.length === 0 ? (
+            <div className="flex items-center justify-center w-[350px] h-[300px] text-green-400 font-medium text-lg">
+              No vulnerabilities found!
+            </div>
+          ) : (
+            <PieChart width={350} height={300}>
+              <Pie data={codeScanData} cx={175} cy={150} outerRadius={100} dataKey="value">
+                {codeScanData.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: "#1B3C53", border: "1px solid #456882", color: "#D2C1B6" }} itemStyle={{ color: "#F4EBD3" }} />
+              <Legend wrapperStyle={{ color: "#F4EBD3" }} />
+            </PieChart>
+          )}
         </div>
 
         <div className="bg-[#1B3C53] p-6 rounded-2xl shadow-lg border border-[#456882]">
           <h3 className="text-xl mb-4 font-semibold text-[#F4EBD3] text-center">
             External Scan Severity
           </h3>
-          <PieChart width={350} height={300}>
-            <Pie data={externalScanData} cx={175} cy={150} outerRadius={100} dataKey="value">
-              {externalScanData.map((entry, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={{ backgroundColor: "#1B3C53", border: "1px solid #456882", color: "#D2C1B6" }} itemStyle={{ color: "#F4EBD3" }} />
-            <Legend wrapperStyle={{ color: "#F4EBD3" }} />
-          </PieChart>
+          {externalScanFindings.length === 0 ? (
+            <div className="flex items-center justify-center w-[350px] h-[300px] text-green-400 font-medium text-lg">
+              No vulnerabilities found!
+            </div>
+          ) : (
+            <PieChart width={350} height={300}>
+              <Pie data={externalScanData} cx={175} cy={150} outerRadius={100} dataKey="value">
+                {externalScanData.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: "#1B3C53", border: "1px solid #456882", color: "#D2C1B6" }} itemStyle={{ color: "#F4EBD3" }} />
+              <Legend wrapperStyle={{ color: "#F4EBD3" }} />
+            </PieChart>
+          )}
         </div>
       </div>
 

@@ -1,0 +1,13 @@
+```python
+import asyncio
+from asgiref.sync import sync_to_async
+
+@sync_to_async
+def create_subprocess(cmd):
+    proc = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+     )
+    return proc 
+```

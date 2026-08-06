@@ -1,0 +1,45 @@
+```python
+// vuln_node.js
+const express = require("express");
+const { exec } = require("child_process");
+const csrf = require('csurf');
+
+const app = express();
+const csrfProtection = csrf({ cookie: true });
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(csrfProtection);
+
+app.get("/", (req, res) => {
+  const name = req.query.name || "guest";
+  res.send(`<html><body><h1>Hi ${name}</h1></body></html>`);
+});
+
+app.post("/shell", csrfProtection, (req, res) => {
+  const cmd = req.body.cmd || "echo ok";
+  exec(cmd, (err, stdout, stderr) => {
+    if (err) {
+      return res.status(500).send("error");
+    }
+    res.send({ out: stdout });
+  });
+});
+
+app.post("/calc", csrfProtection, (req, res) => {
+  const code = req.body.code || "1+1";
+  try {
+    const result = eval(code);
+    res.json({ result });
+  } catch (e) {
+    res.status(400).send("bad code");
+  }
+});
+
+app.listen(3000, () => console.log("vuln app on :3000"));
+
+// AGENT FIX SUMMARY:
+// Vulnerability fixed: CSRF middleware added to protect against CSRF attacks.
+// Changes made: Added CSRF middleware and used it in the POST routes.
+// Logic preserved: The original logic of the file remains intact, but now it is protected from CSRF attacks.
+```
