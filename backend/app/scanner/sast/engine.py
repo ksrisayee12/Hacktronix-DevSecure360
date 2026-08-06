@@ -184,6 +184,19 @@ class SASTEngine:
                     print(f"[SASTEngine] {file_path}: {len(findings)} finding(s)")
                     all_findings.extend(findings)
 
+            # ── Global Deduplication ──────────────────────────────────────────
+            # Prevent multiple scanners (taint, regex, secrets) from reporting the same rule on the same line
+            unique_findings: dict[tuple[str, str, int], Finding] = {}
+            for f in all_findings:
+                key = (f.file or "", f.rule_id, f.line or 0)
+                if key not in unique_findings:
+                    unique_findings[key] = f
+                else:
+                    # Keep the one with a shorter taint_trace if possible
+                    existing = unique_findings[key]
+                    if len(getattr(f, 'taint_trace', [])) < len(getattr(existing, 'taint_trace', [])):
+                        unique_findings[key] = f
+            all_findings = list(unique_findings.values())
             # Persist cache updates to disk
             if cache:
                 cache.save()

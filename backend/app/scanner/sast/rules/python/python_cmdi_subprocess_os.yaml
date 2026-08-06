@@ -1,0 +1,20 @@
+rule_id: python_cmdi_subprocess_os
+language: python
+vuln_class: CMDi
+severity: Critical
+cvss_score: 9.8
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+issue: Command Injection in OS/Subprocess APIs
+message: Untrusted input flows into a shell command execution API.
+sources:
+- request.args
+- request.form
+- input(
+sinks:
+- subprocess.check_output(
+- os.system(
+- subprocess.getoutput(
+- subprocess.call(
+sanitizers:
+- shlex.quote(
+remediation: Avoid shell=True and pass arguments as lists.

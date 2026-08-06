@@ -1,0 +1,20 @@
+rule_id: js_xss_res_send
+language: javascript
+vuln_class: XSS
+severity: Medium
+cvss_score: 6.1
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N
+issue: Reflected Cross-Site Scripting (XSS)
+message: User input is directly written to the HTTP response, enabling XSS attacks.
+sources:
+- req.query
+- req.body
+- req.params
+sinks:
+- res.send(
+- res.write(
+- res.end(
+sanitizers:
+- encodeURIComponent
+- escapeHTML
+remediation: Contextually encode untrusted input before rendering it in HTML.

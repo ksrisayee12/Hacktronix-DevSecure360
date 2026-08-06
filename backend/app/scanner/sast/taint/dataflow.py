@@ -119,7 +119,7 @@ class BlockTransfer:
             # --- Check for source assignments: x = source_call() ---
             if stmt.type in ("assignment", "augmented_assignment",
                               "expression_statement", "local_variable_declaration",
-                              "variable_declaration", "declaration"):
+                              "variable_declaration", "declaration", "lexical_declaration"):
                 self._process_assignment_stmt(
                     stmt, stmt_text, stmt_line, source_bytes,
                     working_taint, gen_set, kill_set
@@ -148,6 +148,9 @@ class BlockTransfer:
                 parts = stmt_text.split("=", 1)
                 target_text = parts[0].strip()
                 value_text = parts[1].strip()
+                if target_text.startswith("let "): target_text = target_text[4:]
+                if target_text.startswith("const "): target_text = target_text[6:]
+                if target_text.startswith("var "): target_text = target_text[4:]
             else:
                 return
         else:

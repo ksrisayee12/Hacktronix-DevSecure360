@@ -9,25 +9,17 @@ rule_id: python_path_traversal_open
 language: python
 vuln_class: Path Traversal
 severity: High
-cwe: CWE-22
-owasp: A01:2021-Broken Access Control
 cvss_score: 7.5
 cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
-confidence: Confirmed
-issue: Path Traversal via open() with unvalidated input
-message: |-
-  Constructing file paths using unvalidated user input allows an attacker to use ../ sequences to read sensitive files (e.g., /etc/passwd) via the built-in open() function.
+issue: Path Traversal via open()
+message: Untrusted input flows into open(), allowing file read/write outside intended
+  directories.
 sources:
+- filename
+- input(
 - request.args
-- request.form
-- request.data
-- request.json
-- request.GET
-- request.POST
 sinks:
 - open(
 sanitizers:
 - os.path.basename(
-- werkzeug.utils.secure_filename(
-remediation: |-
-  Extract only the filename using os.path.basename() or secure_filename(), and verify that os.path.abspath() remains within the intended directory. Always review your code and apply strict bounds or input limitations. Use static analysis tools to verify fixes.
+remediation: Validate paths using strict sandboxing and basename checks.

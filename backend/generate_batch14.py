@@ -196,7 +196,7 @@ wr("c","c_hardcoded_secret",RE["secret"],"Hardcoded Secret","CWE-798","A07:2021-
    [],['password = "','secret = "','api_key = "','token = "','passwd = "'],["getenv(","read_config("],
    ("Load secrets from environment variables or a secrets manager — never embed them in source.\n\n"
     "UNSAFE:\n"
-    "  const char *api_key = \"YOUR_API_KEY_HERE\";\n\n"
+    "  const char *api_key = \"sk_test_aBcDeFgHiJkLmNoPqRsTuVwXyZ\";\n\n"
     "SAFE:\n"
     "  const char *api_key = getenv(\"API_KEY\");\n"
     "  if (!api_key) { fprintf(stderr, \"API_KEY not set\"); exit(1); }\n\n"

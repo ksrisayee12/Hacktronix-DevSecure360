@@ -267,12 +267,12 @@ class TaintEngine:
 
     def _deduplicate(self, findings: list[TaintFinding]) -> list[TaintFinding]:
         """
-        Deduplicate findings by (rule_id, sink_line, source_line).
+        Deduplicate findings by (vuln_class, sink_line).
         Keep the finding with the shortest taint path (most direct).
         """
         seen: dict[tuple, TaintFinding] = {}
         for f in findings:
-            key = (f.rule_id, f.sink_line, f.source_line)
+            key = (f.vuln_class, f.sink_line)
             if key not in seen:
                 seen[key] = f
             else:

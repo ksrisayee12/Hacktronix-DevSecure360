@@ -9,26 +9,16 @@ rule_id: js_cmdi_exec
 language: javascript
 vuln_class: CMDi
 severity: Critical
-cwe: CWE-78
-owasp: A03:2021-Injection
 cvss_score: 9.8
 cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
-confidence: Confirmed
 issue: Command Injection via child_process.exec
-message: |-
-  Untrusted user input is passed to child_process.exec(), which executes commands in a shell environment, allowing arbitrary OS command execution.
+message: Untrusted input flows into child_process.exec, allowing arbitrary OS command
+  execution.
 sources:
-- req.body
-- req.query
-- req.params
-- req.headers
-- req.cookies
-- window.location
-- document.cookie
-- process.argv
-- process.env
+- req.body.cmd
+- req.query.cmd
+- req.params.cmd
 sinks:
-- child_process.exec(
+- exec(
 sanitizers: []
-remediation: |-
-  Avoid executing OS commands if possible. If required, use child_process.execFile() with an array of arguments to prevent shell evaluation.
+remediation: Use execFile or spawn with strict argument separation.

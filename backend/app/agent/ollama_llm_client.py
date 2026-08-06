@@ -109,6 +109,7 @@ def call_ollama(prompt: str) -> str:
         "You are an expert security engineer and developer.\n"
         "You will be given a vulnerability report and the vulnerable source code.\n"
         "Your ONLY task is to FIX the vulnerability by rewriting the source code.\n"
+        "YOU MUST MODIFY THE CODE TO REMOVE THE VULNERABILITY. Returning the exact same code is a failure.\n"
         "CRITICAL INSTRUCTIONS:\n"
         "1. You MUST return the complete, patched source code file in your response.\n"
         "2. Do NOT include any conversational text, greetings, or explanations.\n"

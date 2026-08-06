@@ -1,0 +1,16 @@
+rule_id: js_eval_injection
+language: javascript
+vuln_class: RCE
+severity: Critical
+cvss_score: 10.0
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+issue: Code Injection via eval
+message: Untrusted input is passed to eval(), allowing arbitrary code execution.
+sources:
+- req.body.code
+- req.query.code
+- req.params.code
+sinks:
+- eval(
+sanitizers: []
+remediation: Never use eval() with untrusted data.

@@ -152,7 +152,7 @@ def _process_try(node, cfg: CFGGraph, predecessor_id: int, source_bytes: bytes) 
     exits = []
 
     for child in node.children:
-        if child.type in ("block", "compound_statement"):
+        if child.type in ("block", "compound_statement", "statement_block"):
             # Try body
             try_node = cfg.add_node([], [], label="try_body")
             cfg.add_edge(predecessor_id, try_node.id)
@@ -163,7 +163,7 @@ def _process_try(node, cfg: CFGGraph, predecessor_id: int, source_bytes: bytes) 
             except_node = cfg.add_node([], [], label="except_handler")
             cfg.add_edge(predecessor_id, except_node.id, condition="exception")
             # Process the handler body
-            handler_blocks = [c for c in child.children if c.type in ("block", "compound_statement")]
+            handler_blocks = [c for c in child.children if c.type in ("block", "compound_statement", "statement_block")]
             if handler_blocks:
                 except_exits = _process_block(handler_blocks[0].children, cfg, except_node.id, source_bytes)
                 exits.extend(except_exits)
