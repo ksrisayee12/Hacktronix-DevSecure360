@@ -172,6 +172,7 @@ class SASTEngine:
                     print(f"[SASTEngine] {file_path}: {len(findings)} finding(s)")
                     all_findings.extend(findings)
 
+<<<<<<< HEAD
             # ── Global Deduplication ──────────────────────────────────────────
             # Prevent multiple scanners (taint, regex, secrets) from reporting the same rule on the same line
             unique_findings: dict[tuple[str, str, int], Finding] = {}
@@ -186,6 +187,8 @@ class SASTEngine:
                         unique_findings[key] = f
             all_findings = list(unique_findings.values())
 
+=======
+>>>>>>> hackathon/dhrohit
             # Persist cache updates to disk
             if cache:
                 cache.save()

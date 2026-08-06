@@ -1,7 +1,17 @@
+=======
+# RESEARCH EVIDENCE
+# CWE Source:      https://cwe.mitre.org/data/definitions/78.html
+# CodeQL Source:   https://codeql.github.com/codeql-standard-libraries/
+# Semgrep Source:  https://semgrep.dev/r?q=command+injection
+# OWASP Cheat:     https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html
+# Verification:    Command injection sinks verified from CodeQL standard libraries and Semgrep registry.
+
+>>>>>>> hackathon/dhrohit
 rule_id: js_cmdi_exec
 language: javascript
 vuln_class: CMDi
 severity: Critical
+<<<<<<< HEAD
 cvss_score: 9.8
 cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
 issue: Command Injection via child_process.exec
