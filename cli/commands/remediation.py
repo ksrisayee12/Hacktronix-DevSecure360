@@ -184,6 +184,10 @@ def preview(
         ))
         return
 
+    from cli.utils.progress import smooth_action
+    with smooth_action("👁️ Loading code diff preview...", duration=0.35):
+        pass
+
     items = session.remediation_plan
     if index is not None:
         if 1 <= index <= len(items):

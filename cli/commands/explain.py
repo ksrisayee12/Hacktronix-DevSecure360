@@ -67,6 +67,10 @@ def explain(
         ))
         return
 
+    from cli.utils.progress import smooth_action
+    with smooth_action("🔍 Retrieving security findings...", duration=0.35):
+        pass
+
     # Route based on argument
     if target is None:
         _show_all_findings(session.findings, page)

@@ -99,6 +99,10 @@ def report(
     findings = session.findings
     score    = session.score or {}
 
+    from cli.utils.progress import report_progress
+    with report_progress(fmt or "terminal"):
+        pass
+
     console.print()
     console.print(score_to_panel(score, target=session.scan_target or ""))
     console.print()

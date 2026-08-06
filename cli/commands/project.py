@@ -97,6 +97,10 @@ def status(
     path: str = typer.Option(".", "--path", "-p", help="Workspace root"),
 ):
     """Show workspace status and last scan summary."""
+    from cli.utils.progress import smooth_action
+    with smooth_action("📊 Fetching workspace status...", duration=0.3):
+        pass
+
     workspace = os.path.abspath(path)
     cfg = get_config(workspace)
     history = get_history(limit=5)
@@ -199,9 +203,10 @@ def config_cmd(
 def doctor():
     """Check DevSecure360 environment health."""
     from cli.utils.engine_bridge import check_backend_health
+    from cli.utils.progress import smooth_action
 
-    console.print(f"\n[heading]  Running diagnostics...[/heading]\n")
-    results = check_backend_health()
+    with smooth_action("🩺 Running environment diagnostics...", duration=0.45):
+        results = check_backend_health()
 
     content = Text()
     all_ok = True
