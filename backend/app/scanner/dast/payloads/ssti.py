@@ -25,7 +25,8 @@ def get_detection_payloads() -> list:
         # Class access chain (confirms Jinja2 specifically)
         ("{{config.__class__}}", "Config"),
         # String manipulation
-        (f"{{{{'{'}}}{canary}{{{{'}'}}}", canary),  # literal braces test
+        # Literal brace test — if braces are processed by a template engine, this won't appear verbatim
+        ("{" + canary + "}", canary),
 
         # ── Twig (PHP) ─────────────────────────────────────────────────────────
         # {{7*'7'}} → 49 in Twig (different from Jinja2!)
