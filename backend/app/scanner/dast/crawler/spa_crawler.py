@@ -29,12 +29,23 @@ class SPACrawler:
 
     def _check_playwright(self):
         try:
-            import playwright  # noqa
+            from playwright.sync_api import sync_playwright
+            # Also verify the browser binary actually exists
+            with sync_playwright() as p:
+                exe = p.chromium.executable_path
+                import os
+                if not os.path.exists(exe):
+                    raise FileNotFoundError(f"Chromium binary not found at {exe}")
             self._playwright_available = True
         except ImportError:
             if not SPACrawler._warned_once:
                 logger.warning("Playwright not installed — SPA crawling disabled. "
-                               "Install with: pip install playwright && playwright install chromium")
+                               "Install with: pip install playwright && python -m playwright install chromium")
+                SPACrawler._warned_once = True
+        except Exception as e:
+            if not SPACrawler._warned_once:
+                logger.warning(f"Playwright browser not ready ({e}). "
+                               "Run: python -m playwright install chromium")
                 SPACrawler._warned_once = True
 
     def crawl(self, base_url: str) -> list:
