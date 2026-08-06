@@ -8,8 +8,10 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import os, tempfile, shutil, zipfile, uuid, json
+import os, tempfile, shutil, zipfile, uuid, json, logging
 from datetime import datetime
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
 from app.shared.types import ScanResult, ScanStatus, ScanType, Finding, Severity
 from app.database.history_db import save_scan_result, get_scan_history
@@ -26,8 +28,7 @@ load_dotenv()
 
 app = FastAPI(title=os.getenv("APP_NAME", "DevSecure360"), version="0.1.0")
 
-origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()] or ["*"]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"])
 
 
 @app.get("/")
