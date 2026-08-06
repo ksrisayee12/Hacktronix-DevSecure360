@@ -33,7 +33,8 @@ class RemediationEngine:
                 
         prompt += (
             f"\nRemediation guidance: {finding.remediation}\n\n"
-            "Provide the patched code block. Return ONLY the code in a markdown block without any explanation. "
+            "Provide the patched code snippet that directly replaces the vulnerable evidence. "
+            "Return ONLY the raw code inside a single markdown code block (```). Do not include any explanations, introductory text, or concluding remarks. "
             "Ensure the fix directly addresses the vulnerability using secure best practices."
         )
         
