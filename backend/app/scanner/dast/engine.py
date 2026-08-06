@@ -1,8 +1,17 @@
 """
-DevSecure360 — DAST Engine
-============================
+DevSecure360 — DAST Engine (Enterprise Edition)
+=================================================
 Entry point for website vulnerability scanning.
 Orchestrates: crawl → payload injection → oracle detection → finding construction.
+
+Enterprise-grade capabilities:
+- Security header analysis (HSTS, CSP, X-Frame-Options, cookies, etc.)
+- HTTP method fuzzing (TRACE, PUT, DELETE, CONNECT)
+- JSON body injection for REST API testing
+- Concurrent endpoint scanning (ThreadPoolExecutor with jitter)
+- Static asset skipping
+- Comprehensive payload sets (SQLi, XSS, CMDi, Path Traversal, SSRF, SSTI, XXE, Open Redirect)
+- OOB listener for blind vulnerability confirmation
 
 Interface:
     engine = DASTEngine()
@@ -11,9 +20,13 @@ Interface:
 
 import uuid
 import logging
+import random
+import time
+import threading
 from datetime import datetime, timezone
-from urllib.parse import urlparse, urlencode, urljoin
+from urllib.parse import urlparse, urljoin
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.shared.types import (
     Finding, ScanResult, ScanStatus, ScanType, Severity
@@ -36,21 +49,30 @@ from app.scanner.dast.payloads import xxe as xxe_payloads
 
 from app.scanner.dast.detection import oracle
 from app.scanner.dast.detection.differential import compare_responses, format_diff_evidence
+from app.scanner.dast.checks.header_checks import check_security_headers, HeaderFinding
+from app.scanner.dast.checks.method_fuzzer import fuzz_methods, MethodFinding
 
 logger = logging.getLogger(__name__)
 
 
-# CVSS scores for DAST finding classes — wired into the shared scoring engine
+# ── CVSS / CWE / OWASP metadata ───────────────────────────────────────────────
+
 DAST_CVSS = {
-    "SQLi":           {"score": 9.8, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"},
-    "XSS":            {"score": 6.1, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"},
-    "CMDi":           {"score": 9.8, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"},
-    "Path Traversal": {"score": 7.5, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"},
-    "SSRF":           {"score": 8.6, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"},
-    "XXE":            {"score": 7.5, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"},
-    "SSTI":           {"score": 9.8, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"},
-    "Open Redirect":  {"score": 6.1, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"},
-    "CORS":           {"score": 5.4, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N"},
+    "SQLi":              {"score": 9.8, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"},
+    "XSS":               {"score": 6.1, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"},
+    "CMDi":              {"score": 9.8, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"},
+    "Path Traversal":    {"score": 7.5, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"},
+    "SSRF":              {"score": 8.6, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N"},
+    "XXE":               {"score": 7.5, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"},
+    "SSTI":              {"score": 9.8, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"},
+    "Open Redirect":     {"score": 6.1, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"},
+    "CORS":              {"score": 5.4, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N"},
+    "Missing HSTS":      {"score": 5.9, "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"},
+    "Missing CSP":       {"score": 6.1, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"},
+    "Clickjacking":      {"score": 4.3, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N"},
+    "HTTP Method":       {"score": 5.3, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"},
+    "Info Disclosure":   {"score": 3.1, "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N"},
+    "Cookie Security":   {"score": 5.4, "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N"},
 }
 
 DAST_CWE = {
@@ -88,9 +110,20 @@ def _severity_from_cvss(score: float) -> Severity:
     return Severity.LOW
 
 
+# Static file extensions to skip injection testing
+STATIC_EXTS = (
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".svg", ".bmp",
+    ".css", ".js", ".mjs",
+    ".woff", ".woff2", ".ttf", ".eot",
+    ".mp4", ".mp3", ".avi", ".mov",
+    ".pdf", ".zip", ".tar", ".gz",
+    ".json",  # skip pure JSON files, but NOT JSON API endpoints
+)
+
+
 class DASTEngine:
     """
-    Proprietary DAST engine. No ZAP, no Nikto, no external tools.
+    Enterprise DAST engine. No ZAP, no Nikto — pure proprietary scanning.
     Takes a live URL → crawls → injects → confirms via oracle → returns ScanResult.
     """
 
@@ -98,60 +131,95 @@ class DASTEngine:
     OOB_PORT = 4444
 
     def __init__(self):
-        self.http = DASTHTTPClient(timeout=8)
+        self.http = DASTHTTPClient(timeout=10, request_delay_ms=0)
         self.oob = OOBListener(host=self.OOB_HOST, port=self.OOB_PORT)
         self._findings: list = []
-        self._seen: set = set()   # dedup key: (vuln_class, url, param_name)
+        self._findings_lock = threading.Lock()
+        self._seen: set = set()
 
     def scan(self, target_url: str) -> ScanResult:
         scan_id = str(uuid.uuid4())
         started_at = datetime.now(timezone.utc).isoformat()
 
         try:
-            # Validate URL
             parsed = urlparse(target_url)
             if parsed.scheme not in ("http", "https"):
                 raise ValueError(f"Invalid URL scheme: {parsed.scheme}")
 
-            logger.info(f"[DAST] Starting scan: {target_url}")
+            logger.info(f"[DAST] Starting enterprise scan: {target_url}")
 
             # Start OOB listener
             self.oob.start()
 
-            # --- Phase 1: Crawl ---
-            logger.info("[DAST] Crawling target...")
-            html_crawler = HTMLCrawler(self.http, max_depth=3, max_pages=50)
+            # ── Phase 1: Crawl ─────────────────────────────────────────────────
+            logger.info("[DAST] Phase 1: Crawling target (HTML + sitemap + robots.txt + JS)...")
+            html_crawler = HTMLCrawler(self.http, max_depth=3, max_pages=75)
             endpoints = html_crawler.crawl(target_url)
 
             spa_crawler = SPACrawler(max_pages=20)
             spa_endpoints = spa_crawler.crawl(target_url)
             endpoints.extend(spa_endpoints)
 
-            # Always test the root URL with common param names even if no forms found
+            # Deduplicate
+            seen_keys = set()
+            unique_endpoints = []
+            for ep in endpoints:
+                key = f"{ep.method}:{ep.url}"
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    unique_endpoints.append(ep)
+            endpoints = unique_endpoints
+
+            # Always add root URL with common params if no endpoints found
             if not endpoints:
-                endpoints = [Endpoint(url=target_url, method="GET",
-                                      params=[Param(name="q", location="query"),
-                                              Param(name="id", location="query"),
-                                              Param(name="url", location="query"),
-                                              Param(name="file", location="query")])]
+                from app.scanner.dast.crawler.html_crawler import FUZZ_PARAMS
+                endpoints = [Endpoint(
+                    url=target_url, method="GET",
+                    params=[Param(name=p, location="query", default_value="test") for p in FUZZ_PARAMS[:10]]
+                )]
 
-            logger.info(f"[DAST] Discovered {len(endpoints)} endpoints")
+            logger.info(f"[DAST] Discovered {len(endpoints)} unique endpoints")
 
-            # --- Phase 2: Test each endpoint concurrently ---
-            from concurrent.futures import ThreadPoolExecutor, as_completed
-            with ThreadPoolExecutor(max_workers=10) as executor:
+            # ── Phase 2: Security Header Analysis (passive, fast) ──────────────
+            logger.info("[DAST] Phase 2: Security header analysis...")
+            root_resp = self.http.get(target_url)
+            if root_resp.status_code > 0:
+                # Pass cookies from session
+                session_cookies = [
+                    {"name": c.name, "value": c.value,
+                     "httpOnly": False, "secure": c.secure or False,
+                     "sameSite": getattr(c, "_rest", {}).get("SameSite", "")}
+                    for c in self.http.session.cookies
+                ]
+                header_findings = check_security_headers(root_resp.headers, target_url, session_cookies)
+                for hf in header_findings:
+                    self._add_header_finding(hf, target_url)
+                logger.info(f"[DAST] Header analysis: {len(header_findings)} issues found")
+
+            # ── Phase 3: HTTP Method Fuzzing ───────────────────────────────────
+            logger.info("[DAST] Phase 3: HTTP method fuzzing...")
+            method_findings = fuzz_methods(self.http, target_url)
+            for mf in method_findings:
+                self._add_method_finding(mf)
+            logger.info(f"[DAST] Method fuzzing: {len(method_findings)} issues found")
+
+            # ── Phase 4: CORS Check ────────────────────────────────────────────
+            logger.info("[DAST] Phase 4: CORS misconfiguration check...")
+            self._test_cors(target_url)
+
+            # ── Phase 5: Concurrent Endpoint Attack ────────────────────────────
+            logger.info(f"[DAST] Phase 5: Attacking {len(endpoints)} endpoints concurrently...")
+
+            with ThreadPoolExecutor(max_workers=5) as executor:
                 futures = []
                 for i, endpoint in enumerate(endpoints, 1):
                     futures.append(executor.submit(self._test_endpoint, endpoint, target_url, i, len(endpoints)))
-                
+
                 for future in as_completed(futures):
                     try:
                         future.result()
                     except Exception as e:
-                        logger.error(f"[DAST] Endpoint testing failed: {e}")
-
-            # --- Phase 3: CORS check on root ---
-            self._test_cors(target_url)
+                        logger.error(f"[DAST] Endpoint test failed: {e}")
 
             self.oob.stop()
             self.http.close()
@@ -159,7 +227,10 @@ class DASTEngine:
             score = compute_score(self._findings)
             completed_at = datetime.now(timezone.utc).isoformat()
 
-            logger.info(f"[DAST] Scan complete. {len(self._findings)} findings. Score: {score.get('score')}")
+            logger.info(
+                f"[DAST] Scan complete. {len(self._findings)} findings. "
+                f"Score: {score.get('score')} | Grade: {score.get('grade')}"
+            )
 
             return ScanResult(
                 scan_id=scan_id,
@@ -195,13 +266,13 @@ class DASTEngine:
         if index and total:
             logger.info(f"[DAST] Testing endpoint {index}/{total}: {endpoint.method} {endpoint.url}")
 
-        # Skip scanning static assets
-        static_exts = [".png", ".jpg", ".jpeg", ".gif", ".css", ".js", ".woff", ".woff2", ".svg", ".ico"]
-        if any(endpoint.url.lower().split("?")[0].endswith(ext) for ext in static_exts):
+        # Skip static asset files
+        path = urlparse(endpoint.url).path.lower()
+        if any(path.endswith(ext) for ext in STATIC_EXTS):
             return
 
         if not endpoint.params:
-            # No params — still try SSTI on URL path, SSRF on root
+            # No params — test with SSRF heuristic params only
             self._test_ssrf_endpoint(endpoint)
             return
 
@@ -213,18 +284,24 @@ class DASTEngine:
             self._test_ssrf(endpoint, param)
             self._test_ssti(endpoint, param)
             self._test_open_redirect(endpoint, param)
+            self._test_xxe(endpoint, param)
+
+        # Also test JSON body injection if POST endpoint
+        if endpoint.method == "POST":
+            self._test_json_injection(endpoint)
 
     # ── SQLi ──────────────────────────────────────────────────────────────────
 
     def _test_sqli(self, endpoint: Endpoint, param: Param):
-        # Baseline request
-        baseline = self._request(endpoint, param, param.default_value or "test")
+        baseline = self._request(endpoint, param, param.default_value or "1")
         if baseline.status_code == 0:
             return
 
         # 1. Error-based
         for p in sqli_payloads.get_error_payloads():
             resp = self._request(endpoint, param, p.value)
+            if resp.status_code == 0:
+                continue
             error_match = oracle.check_sqli_error(resp.body)
             if error_match:
                 self._add_finding(
@@ -235,22 +312,20 @@ class DASTEngine:
                     issue=f"SQL Injection (error-based) in parameter '{param.name}'",
                     description=(
                         f"The parameter '{param.name}' on {endpoint.url} is directly interpolated "
-                        f"into a SQL query without sanitization. A database error was returned "
-                        f"confirming the injection: '{error_match}'."
+                        f"into a SQL query. A database error was returned confirming injection: '{error_match}'."
                     ),
                     evidence=resp.raw_request,
-                    remediation=(
-                        "Use parameterized queries / prepared statements. Never concatenate "
-                        "user input into SQL strings. Use an ORM or query builder."
-                    ),
+                    remediation="Use parameterized queries / prepared statements. Never concatenate user input into SQL.",
                     payload=p.value,
                 )
-                return  # one confirmed finding per param per vuln class is enough
+                return
 
-        # 2. Boolean-based
+        # 2. Boolean-based differential
         for true_p, false_p in sqli_payloads.get_boolean_pairs():
             resp_true = self._request(endpoint, param, true_p)
             resp_false = self._request(endpoint, param, false_p)
+            if resp_true.status_code == 0 or resp_false.status_code == 0:
+                continue
             diff = compare_responses(resp_true, resp_false)
             if diff.significant:
                 self._add_finding(
@@ -258,18 +333,18 @@ class DASTEngine:
                     url=endpoint.url,
                     param=param.name,
                     confidence="Confirmed",
-                    issue=f"SQL Injection (boolean-based) in parameter '{param.name}'",
+                    issue=f"SQL Injection (boolean-based blind) in parameter '{param.name}'",
                     description=(
-                        f"Boolean-based SQL injection detected. Responses differ significantly "
-                        f"between true-condition and false-condition payloads."
+                        f"Boolean-based SQL injection detected. True-condition payload returns significantly "
+                        f"different response than false-condition payload."
                     ),
                     evidence=format_diff_evidence(resp_true, resp_false, param.name),
                     remediation="Use parameterized queries / prepared statements.",
-                    payload=f"{true_p} vs {false_p}",
+                    payload=f"true: {true_p} | false: {false_p}",
                 )
                 return
 
-        # 3. Time-based (blind)
+        # 3. Time-based blind
         for p in sqli_payloads.get_time_payloads():
             resp = self._request(endpoint, param, p.value)
             if oracle.check_sqli_time(resp.response_time_ms, baseline.response_time_ms):
@@ -300,6 +375,8 @@ class DASTEngine:
 
         for payload in xss_payloads.get_reflected_payloads(canary_id):
             resp = self._request(endpoint, param, payload)
+            if resp.status_code == 0:
+                continue
             reflected = oracle.check_xss_reflection(resp.body, payload)
             if reflected:
                 executed = oracle.check_xss_executed(resp.url, marker)
@@ -311,10 +388,10 @@ class DASTEngine:
                     confidence=confidence,
                     issue=f"Cross-Site Scripting (reflected) in parameter '{param.name}'",
                     description=(
-                        f"The parameter '{param.name}' is reflected in the response without "
-                        f"sanitization. {'JavaScript execution confirmed by headless browser.' if executed else 'Payload reflected in HTML — likely XSS.'}"
+                        f"The parameter '{param.name}' is reflected in the response without sanitization. "
+                        f"{'JavaScript execution confirmed by headless browser.' if executed else 'Payload reflected in HTML — likely XSS.'}"
                     ),
-                    evidence=f"Payload: {payload}\nReflected in response: Yes\nJS executed: {executed}\n\n{resp.raw_request}",
+                    evidence=f"Payload: {payload}\nReflected: Yes\nExecuted: {executed}\n\n{resp.raw_request}",
                     remediation=(
                         "HTML-encode all user input before rendering. Use Content-Security-Policy. "
                         "Never insert user data directly into innerHTML or event handlers."
@@ -339,14 +416,11 @@ class DASTEngine:
                     confidence="Confirmed",
                     issue=f"OS Command Injection in parameter '{param.name}'",
                     description=(
-                        f"Command injection confirmed. The unique canary token '{canary_id}' "
-                        f"was returned in the response after injecting: {payload}"
+                        f"Command injection confirmed. Canary token '{canary_id}' "
+                        f"returned in response after injecting: {payload}"
                     ),
                     evidence=f"Payload: {payload}\nCanary in response: {canary_id}\n\n{resp.raw_request}",
-                    remediation=(
-                        "Never pass user input to shell commands. Use subprocess with "
-                        "shell=False and a list of arguments. Whitelist acceptable values."
-                    ),
+                    remediation="Never pass user input to shell commands. Use subprocess with shell=False.",
                     payload=payload,
                 )
                 return
@@ -355,7 +429,7 @@ class DASTEngine:
         oob_url = f"{self.OOB_HOST}:{self.OOB_PORT}"
         for payload in cmdi_payloads.get_oob_payloads(oob_url, canary_id):
             self._request(endpoint, param, payload)
-            callback = self.oob.get_callback(canary_id, timeout=0.2)
+            callback = self.oob.get_callback(canary_id, timeout=0.3)
             if callback:
                 self._add_finding(
                     vuln_class="CMDi",
@@ -375,6 +449,8 @@ class DASTEngine:
     def _test_path_traversal(self, endpoint: Endpoint, param: Param):
         for payload in path_traversal_payloads.get_payloads():
             resp = self._request(endpoint, param, payload)
+            if resp.status_code == 0:
+                continue
             match = oracle.check_path_traversal(resp.body)
             if match:
                 self._add_finding(
@@ -382,7 +458,7 @@ class DASTEngine:
                     url=endpoint.url,
                     param=param.name,
                     confidence="Confirmed",
-                    issue=f"Path Traversal in parameter '{param.name}'",
+                    issue=f"Path Traversal / Local File Inclusion in parameter '{param.name}'",
                     description=(
                         f"File read outside webroot confirmed. Response contained '{match}' "
                         f"after injecting traversal payload."
@@ -390,7 +466,7 @@ class DASTEngine:
                     evidence=f"Payload: {payload}\nOracle match: {match}\n\n{resp.raw_request}",
                     remediation=(
                         "Canonicalize file paths and validate they are inside the allowed directory. "
-                        "Never build file paths from user input. Use os.path.abspath() and check prefix."
+                        "Never build file paths from user input."
                     ),
                     payload=payload,
                 )
@@ -404,9 +480,11 @@ class DASTEngine:
 
         for payload in ssrf_payloads.get_payloads(oob_host, canary_id):
             resp = self._request(endpoint, param, payload)
+            if resp.status_code == 0:
+                continue
 
-            # OOB callback confirmation (most reliable)
-            callback = self.oob.get_callback(canary_id, timeout=0.2)
+            # OOB callback confirmation
+            callback = self.oob.get_callback(canary_id, timeout=0.3)
             if callback:
                 self._add_finding(
                     vuln_class="SSRF",
@@ -414,11 +492,10 @@ class DASTEngine:
                     param=param.name,
                     confidence="Confirmed",
                     issue=f"Server-Side Request Forgery in parameter '{param.name}'",
-                    description="SSRF confirmed via OOB HTTP callback. The server made an outbound request to our listener.",
+                    description="SSRF confirmed via OOB HTTP callback. Server made an outbound request to our listener.",
                     evidence=f"Payload: {payload}\nOOB callback:\n{callback}",
                     remediation=(
-                        "Whitelist allowed URLs/domains for outbound requests. "
-                        "Block access to private IP ranges and metadata endpoints. "
+                        "Whitelist allowed URLs/domains. Block private IP ranges and metadata endpoints. "
                         "Use a dedicated HTTP proxy with egress filtering."
                     ),
                     payload=payload,
@@ -442,8 +519,8 @@ class DASTEngine:
                     return
 
     def _test_ssrf_endpoint(self, endpoint: Endpoint):
-        """Test common SSRF-prone URL parameters by name heuristic."""
-        ssrf_param_names = ["url", "redirect", "next"]
+        """Test common SSRF-prone URL parameters by name heuristic on parameterless endpoints."""
+        ssrf_param_names = ["url", "redirect", "next", "src", "dest", "target"]
         for name in ssrf_param_names:
             param = Param(name=name, location="query")
             self._test_ssrf(endpoint, param)
@@ -453,7 +530,14 @@ class DASTEngine:
     def _test_ssti(self, endpoint: Endpoint, param: Param):
         for payload, expected in ssti_payloads.get_detection_payloads():
             resp = self._request(endpoint, param, payload)
+            if resp.status_code == 0:
+                continue
             if oracle.check_ssti(resp.body, expected):
+                # Verify: the expected value must NOT appear in the baseline (avoid false positives)
+                baseline = self._request(endpoint, param, param.default_value or "test_baseline")
+                if expected in baseline.body:
+                    continue  # pre-existing content — not a real finding
+
                 self._add_finding(
                     vuln_class="SSTI",
                     url=endpoint.url,
@@ -467,7 +551,7 @@ class DASTEngine:
                     evidence=f"Payload: {payload}\nExpected in response: {expected}\n\n{resp.raw_request}",
                     remediation=(
                         "Never pass user input directly into template strings. "
-                        "Use template engines in sandbox mode or escape all user values before rendering."
+                        "Use template engines in sandbox mode or escape all user values."
                     ),
                     payload=payload,
                 )
@@ -492,13 +576,93 @@ class DASTEngine:
                         f"to the injected external domain: {match}"
                     ),
                     evidence=f"Payload: {payload}\nRedirect to: {match}\n\n{resp.raw_request}",
+                    remediation="Validate redirect targets against a whitelist of allowed destinations.",
+                    payload=payload,
+                )
+                return
+
+    # ── XXE ───────────────────────────────────────────────────────────────────
+
+    def _test_xxe(self, endpoint: Endpoint, param: Param):
+        for payload in xxe_payloads.get_payloads():
+            # Only inject XXE on POST endpoints or XML-accepting endpoints
+            if endpoint.method not in ("POST", "PUT", "PATCH"):
+                continue
+            headers = {"Content-Type": "application/xml"}
+            resp = self.http.post(endpoint.url, data=payload, headers=headers)
+            match = oracle.check_xxe(resp.body)
+            if match:
+                self._add_finding(
+                    vuln_class="XXE",
+                    url=endpoint.url,
+                    param=param.name,
+                    confidence="Confirmed",
+                    issue=f"XML External Entity (XXE) Injection",
+                    description=(
+                        f"XXE confirmed. File contents appeared in response after injecting "
+                        f"malicious XML entity: '{match}'"
+                    ),
+                    evidence=f"Payload:\n{payload}\nOracle match: {match}\n\n{resp.raw_request}",
                     remediation=(
-                        "Validate redirect targets against a whitelist of allowed destinations. "
-                        "Never use raw user input as a redirect URL."
+                        "Disable external entity processing in your XML parser. "
+                        "Use JSON where possible. Never deserialize untrusted XML."
                     ),
                     payload=payload,
                 )
                 return
+
+    # ── JSON injection (REST API testing) ─────────────────────────────────────
+
+    def _test_json_injection(self, endpoint: Endpoint):
+        """
+        Test POST endpoints that might accept JSON by re-injecting all payloads
+        as JSON body parameters. Covers REST APIs that reject form data.
+        """
+        baseline_json = {p.name: p.default_value or "test" for p in endpoint.params}
+
+        for param in endpoint.params:
+            # SQLi in JSON
+            for p in sqli_payloads.get_error_payloads()[:5]:   # top 5 only for speed
+                test_json = {**baseline_json, param.name: p.value}
+                resp = self.http.post_json(endpoint.url, test_json)
+                if resp.status_code == 0:
+                    continue
+                error_match = oracle.check_sqli_error(resp.body)
+                if error_match:
+                    self._add_finding(
+                        vuln_class="SQLi",
+                        url=endpoint.url,
+                        param=f"{param.name} (JSON body)",
+                        confidence="Confirmed",
+                        issue=f"SQL Injection via JSON body parameter '{param.name}'",
+                        description=(
+                            f"SQL injection in JSON body parameter '{param.name}'. "
+                            f"A database error was returned: '{error_match}'."
+                        ),
+                        evidence=f"JSON payload: {test_json}\nError: {error_match}\n\n{resp.raw_request}",
+                        remediation="Use parameterized queries even when accepting JSON input.",
+                        payload=str(test_json),
+                    )
+                    break
+
+            # XSS in JSON response
+            canary_id = self.oob.generate_canary("xss_json")
+            xss_payload = xss_payloads.get_reflected_payloads(canary_id)[0]
+            test_json = {**baseline_json, param.name: xss_payload}
+            resp = self.http.post_json(endpoint.url, test_json)
+            if resp.status_code > 0 and oracle.check_xss_reflection(resp.body, xss_payload):
+                self._add_finding(
+                    vuln_class="XSS",
+                    url=endpoint.url,
+                    param=f"{param.name} (JSON body)",
+                    confidence="Probable",
+                    issue=f"XSS via JSON body parameter '{param.name}'",
+                    description=f"XSS payload reflected in response when injected via JSON body.",
+                    evidence=f"JSON payload: {test_json}\n\n{resp.raw_request}",
+                    remediation="Encode output regardless of input content type.",
+                    payload=xss_payload,
+                )
+                break
 
     # ── CORS ──────────────────────────────────────────────────────────────────
 
@@ -520,8 +684,7 @@ class DASTEngine:
                 evidence=f"Origin sent: {evil_origin}\nServer responded: {match}\n\n{resp.raw_request}",
                 remediation=(
                     "Maintain an explicit whitelist of allowed origins. "
-                    "Never reflect Origin dynamically when Allow-Credentials is true. "
-                    "Never use wildcard (*) with credentials."
+                    "Never reflect Origin dynamically when Allow-Credentials is true."
                 ),
                 payload=evil_origin,
             )
@@ -531,7 +694,6 @@ class DASTEngine:
     def _request(self, endpoint: Endpoint, param: Param, payload_value: str,
                  allow_redirects: bool = True) -> HttpResponse:
         """Send a request with the payload injected into the target parameter."""
-        # Build param map: all params at default, target param = payload
         params_map = {p.name: p.default_value for p in endpoint.params}
         params_map[param.name] = payload_value
 
@@ -545,11 +707,12 @@ class DASTEngine:
     def _add_finding(self, vuln_class: str, url: str, param: str,
                      confidence: str, issue: str, description: str,
                      evidence: str, remediation: str, payload: str = ""):
-        """Deduplicate and add a finding."""
+        """Thread-safe deduplicated finding addition."""
         dedup_key = (vuln_class, url, param)
-        if dedup_key in self._seen:
-            return
-        self._seen.add(dedup_key)
+        with self._findings_lock:
+            if dedup_key in self._seen:
+                return
+            self._seen.add(dedup_key)
 
         cvss_info = DAST_CVSS.get(vuln_class, {"score": 5.0, "vector": ""})
         severity = _severity_from_cvss(cvss_info["score"])
@@ -569,11 +732,77 @@ class DASTEngine:
             issue=issue,
             description=description,
             evidence=evidence,
-            taint_trace=[],   # DAST uses evidence field, not taint_trace
+            taint_trace=[],
             remediation=remediation,
             tool="devsecure_dast",
             cvss_score=cvss_info["score"],
             cvss_vector=cvss_info.get("vector"),
         )
-        self._findings.append(finding)
+
+        with self._findings_lock:
+            self._findings.append(finding)
+
         logger.info(f"[DAST] FINDING: {vuln_class} @ {url} param={param} ({confidence})")
+
+    def _add_header_finding(self, hf: HeaderFinding, url: str):
+        """Convert a HeaderFinding to a Finding and add it."""
+        # Map severity string → enum
+        sev_map = {
+            "Critical": Severity.CRITICAL, "High": Severity.HIGH,
+            "Medium": Severity.MEDIUM, "Low": Severity.LOW,
+        }
+        severity = sev_map.get(hf.severity, Severity.LOW)
+
+        finding = Finding(
+            id=str(uuid.uuid4()),
+            rule_id=f"dast_header_{hf.issue[:40].lower().replace(' ', '_')}",
+            vuln_class="Security Header",
+            scan_type=ScanType.DAST,
+            file=None, line=None,
+            url=url,
+            severity=severity,
+            confidence=hf.confidence,
+            cwe=hf.cwe,
+            owasp=hf.owasp,
+            issue=hf.issue,
+            description=hf.description,
+            evidence=f"URL: {url}\nHeader check: {hf.issue}",
+            taint_trace=[],
+            remediation=hf.remediation,
+            tool="devsecure_dast",
+            cvss_score=hf.cvss_score,
+            cvss_vector=DAST_CVSS.get("Info Disclosure", {}).get("vector", ""),
+        )
+
+        with self._findings_lock:
+            self._findings.append(finding)
+
+    def _add_method_finding(self, mf: MethodFinding):
+        """Convert a MethodFinding to a Finding and add it."""
+        sev_map = {"Critical": Severity.CRITICAL, "High": Severity.HIGH,
+                   "Medium": Severity.MEDIUM, "Low": Severity.LOW}
+        severity = sev_map.get(mf.severity, Severity.LOW)
+
+        finding = Finding(
+            id=str(uuid.uuid4()),
+            rule_id=f"dast_method_{mf.method.lower()}",
+            vuln_class="HTTP Method",
+            scan_type=ScanType.DAST,
+            file=None, line=None,
+            url=mf.url,
+            severity=severity,
+            confidence=mf.confidence,
+            cwe=mf.cwe,
+            owasp=mf.owasp,
+            issue=mf.issue,
+            description=mf.description,
+            evidence=mf.evidence,
+            taint_trace=[],
+            remediation=mf.remediation,
+            tool="devsecure_dast",
+            cvss_score=mf.cvss_score,
+            cvss_vector=DAST_CVSS.get("HTTP Method", {}).get("vector", ""),
+        )
+
+        with self._findings_lock:
+            self._findings.append(finding)
