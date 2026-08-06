@@ -15,6 +15,7 @@ from app.database.history_db import save_scan_result, get_scan_history
 from app.utils.aggregator import compute_score
 
 from app.scanner.sast.engine import SASTEngine
+from app.scanner.remediation_engine import RemediationEngine
 # Phase 3: from app.scanner.port.scanner import PortScanner
 # Phase 4: from app.scanner.secrets.scanner import SecretScanner
 # Phase 5: from app.scanner.dast.engine import DASTEngine
@@ -93,6 +94,18 @@ def scan_port(request: PortScanRequest):
 @app.get("/history")
 def history():
     return {"history": get_scan_history()}
+
+
+class RemediateRequest(BaseModel):
+    finding: Finding
+
+@app.post("/scan/remediate")
+def remediate_finding(request: RemediateRequest):
+    try:
+        fix = RemediationEngine.generate_fix(request.finding)
+        return {"status": "success", "fix": fix}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
