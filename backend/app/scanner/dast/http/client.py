@@ -6,10 +6,15 @@ Handles sessions, cookies, redirects, custom headers, and timing.
 """
 
 import requests
+import urllib3
 import time
 import uuid
 from typing import Optional
 from dataclasses import dataclass, field
+
+# Suppress the per-request InsecureRequestWarning — we intentionally allow self-signed
+# certs on test targets. Warning is suppressed once here instead of flooding logs.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 @dataclass

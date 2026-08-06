@@ -25,13 +25,17 @@ class SPACrawler:
         self._playwright_available = False
         self._check_playwright()
 
+    _warned_once = False   # class-level flag so warning only prints once per process
+
     def _check_playwright(self):
         try:
             import playwright  # noqa
             self._playwright_available = True
         except ImportError:
-            logger.warning("Playwright not installed — SPA crawling disabled. "
-                           "Install with: pip install playwright && playwright install chromium")
+            if not SPACrawler._warned_once:
+                logger.warning("Playwright not installed — SPA crawling disabled. "
+                               "Install with: pip install playwright && playwright install chromium")
+                SPACrawler._warned_once = True
 
     def crawl(self, base_url: str) -> list:
         """
