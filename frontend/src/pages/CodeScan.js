@@ -33,9 +33,9 @@ export default function CodeScan() {
 
   const severityColor = (s) => {
     if (s === "Critical") return "text-purple-400";
-    if (s === "High")     return "text-red-400";
-    if (s === "Medium")   return "text-yellow-400";
-    if (s === "Low")      return "text-green-400";
+    if (s === "High") return "text-red-400";
+    if (s === "Medium") return "text-yellow-400";
+    if (s === "Low") return "text-green-400";
     return "text-gray-400";
   };
 
@@ -55,9 +55,8 @@ export default function CodeScan() {
           <button
             onClick={handleScan}
             disabled={loading}
-            className={`px-6 py-2 rounded-md text-white font-semibold transition ${
-              loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#456882] hover:bg-[#98A1BC]"
-            }`}
+            className={`px-6 py-2 rounded-md text-white font-semibold transition ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#456882] hover:bg-[#98A1BC]"
+              }`}
           >
             {loading ? "Scanning..." : "Start Scan"}
           </button>
@@ -74,11 +73,10 @@ export default function CodeScan() {
             {/* Score bar */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-[#F4EBD3]">Scan Summary</h3>
-              <span className={`px-3 py-1 rounded-full text-white text-sm font-bold ${
-                result.score?.score >= 80 ? "bg-green-600"
-                : result.score?.score >= 60 ? "bg-yellow-500"
-                : "bg-red-600"
-              }`}>
+              <span className={`px-3 py-1 rounded-full text-white text-sm font-bold ${result.score?.score >= 80 ? "bg-green-600"
+                  : result.score?.score >= 60 ? "bg-yellow-500"
+                    : "bg-red-600"
+                }`}>
                 Score: {result.score?.score ?? 0} | Grade: {result.score?.grade ?? "N/A"}
               </span>
             </div>

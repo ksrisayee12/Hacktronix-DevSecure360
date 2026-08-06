@@ -63,8 +63,15 @@ def report(
       devsecure report html      → Save styled HTML report
       devsecure report pdf       → Save PDF report
     """
+    if not isinstance(fmt, str):
+        fmt = getattr(fmt, "default", None)
+        if not isinstance(fmt, str):
+            fmt = None
+
     if fmt:
         fmt = fmt.lower().strip()
+        if fmt.startswith("report "):
+            fmt = fmt.replace("report ", "", 1).strip()
         dispatch = {
             "json": report_json,
             "html": report_html,

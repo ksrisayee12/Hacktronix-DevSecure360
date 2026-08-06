@@ -28,10 +28,9 @@ import os
 import uuid
 import hashlib
 import json
-import os
-import uuid
-import hashlib
-import json
+import zipfile
+import tempfile
+import shutil
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -150,13 +149,26 @@ class SASTEngine:
         scan_id = str(uuid.uuid4())
         started_at = datetime.now(timezone.utc).isoformat()
         all_findings: list[Finding] = []
+        temp_extract_dir = None
 
         try:
-            files = self._collect_files(target_path)
+            # Handle ZIP archives transparently
+            actual_target = target_path
+            if os.path.isfile(target_path) and (target_path.lower().endswith(".zip") or zipfile.is_zipfile(target_path)):
+                temp_extract_dir = tempfile.mkdtemp(prefix="devsecure_scan_zip_")
+                try:
+                    with zipfile.ZipFile(target_path, "r") as z:
+                        z.extractall(temp_extract_dir)
+                    actual_target = temp_extract_dir
+                    print(f"[SASTEngine] Unpacked ZIP archive '{os.path.basename(target_path)}' -> {temp_extract_dir}")
+                except Exception as ze:
+                    print(f"[SASTEngine] Failed to extract zip {target_path}: {ze}")
+
+            files = self._collect_files(actual_target)
             print(f"[SASTEngine] Scanning {len(files)} file(s) in: {target_path}")
 
             # ── Performance Optimization 3: Incremental Scan Cache ─────────────
-            cache_dir = target_path if os.path.isdir(target_path) else os.path.dirname(target_path)
+            cache_dir = actual_target if os.path.isdir(actual_target) else os.path.dirname(actual_target)
             cache = ScanCache(self.rules, cache_dir=cache_dir) if use_cache else None
 
             # ── Performance Optimization 4: Parallel File Scanning ─────────────
@@ -205,6 +217,9 @@ class SASTEngine:
                 completed_at=datetime.now(timezone.utc).isoformat(),
                 error=str(e)
             )
+        finally:
+            if temp_extract_dir and os.path.exists(temp_extract_dir):
+                shutil.rmtree(temp_extract_dir, ignore_errors=True)
 
     def _scan_parallel(self, files: list[str], cache) -> dict[str, list[Finding]]:
         """Scan multiple files in parallel using a thread pool."""

@@ -53,6 +53,16 @@ def plan(
     """Generate an AI remediation plan for findings from the last scan."""
     session = get_session()
 
+    if not isinstance(severity, str):
+        severity = getattr(severity, "default", None)
+        if not isinstance(severity, str):
+            severity = None
+
+    if not isinstance(max_findings, int):
+        max_findings = getattr(max_findings, "default", 10)
+        if not isinstance(max_findings, int):
+            max_findings = 10
+
     if not session.scan_ran or not session.findings:
         console.print(make_warning_panel(
             Text("\n  No scan results in session.\n  Run [cyan]devsecure scan .[/cyan] first.\n"),
@@ -234,6 +244,11 @@ def apply(
 ):
     """Apply the remediation patches to source files on disk."""
     session = get_session()
+
+    if not isinstance(yes, bool):
+        yes = getattr(yes, "default", False)
+        if not isinstance(yes, bool):
+            yes = False
 
     if not session.remediation_plan:
         console.print(make_warning_panel(

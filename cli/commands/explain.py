@@ -55,6 +55,11 @@ def explain(
     """
     session = get_session()
 
+    if not isinstance(page, int):
+        page = getattr(page, "default", 1)
+        if not isinstance(page, int):
+            page = 1
+
     if not session.scan_ran or not session.findings:
         console.print(make_warning_panel(
             Text("\n  No scan results in session.\n  Run [cyan]devsecure scan .[/cyan] first.\n"),
@@ -76,6 +81,11 @@ def explain(
 # ─────────────────────────────────────────────
 
 def _show_all_findings(findings: list, page: int = 1):
+    if not isinstance(page, int):
+        page = getattr(page, "default", 1)
+        if not isinstance(page, int):
+            page = 1
+
     PAGE_SIZE = 25
     total     = len(findings)
     start     = (page - 1) * PAGE_SIZE
@@ -129,18 +139,42 @@ def _show_by_severity(findings: list, severity: str):
 
 
 # ─────────────────────────────────────────────
-# Show a single finding detail
+# Show a single finding detail or file findings
 # ─────────────────────────────────────────────
 
 def _show_single_finding(findings: list, identifier: str):
     session = get_session()
     finding = session.get_finding_by_id(identifier)
 
+    # If direct lookup by ID/index failed, check if identifier is a file path or filename
+    if finding is None:
+        import os
+        norm_id = identifier.replace("\\", "/").lower()
+        file_matches = []
+        for i, f in enumerate(findings, 1):
+            fpath = (get_field(f, "file", "") or "").replace("\\", "/").lower()
+            if fpath and (norm_id in fpath or norm_id.endswith(os.path.basename(fpath)) or fpath.endswith(os.path.basename(norm_id))):
+                file_matches.append((i, f))
+
+        if file_matches:
+            if len(file_matches) == 1:
+                idx, finding = file_matches[0]
+            else:
+                matched_findings = [f for _, f in file_matches]
+                console.print()
+                console.print(findings_to_table(
+                    matched_findings,
+                    title=f"Findings in {os.path.basename(identifier)}  ({len(matched_findings)} total)",
+                ))
+                console.print()
+                console.print(f"  [dim]Run [cyan]devsecure explain <number>[/cyan] (e.g. [cyan]explain {file_matches[0][0]}[/cyan]) for full details.[/dim]\n")
+                return
+
     if finding is None:
         console.print(make_error_panel(
             Text(
                 f"\n  Finding '{identifier}' not found.\n"
-                f"  Use a number (1-{len(findings)}) or a finding UUID.\n",
+                f"  Use a finding number (1-{len(findings)}), severity (critical/high/medium/low), or file name.\n",
                 style="white",
             ),
         ))
@@ -156,6 +190,8 @@ def _show_single_finding(findings: list, identifier: str):
             if fid and fid.startswith(identifier):
                 idx = i
                 break
+        if idx is None and 'file_matches' in locals() and file_matches:
+            idx = file_matches[0][0]
 
     console.print()
     console.print(finding_to_panel(finding, index=idx or 0))

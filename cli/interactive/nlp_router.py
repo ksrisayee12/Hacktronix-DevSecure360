@@ -60,6 +60,11 @@ _rule(r"explain (.+)",                            "explain",     lambda m: m.gro
 _rule(r"^explain$",                               "explain",     None)
 
 # Remediation variants
+_rule(r"^fix$",                                   "remediation_plan",      None)
+_rule(r"^plan$",                                  "remediation_plan",      None)
+_rule(r"^preview$",                               "remediation_preview",   None)
+_rule(r"^apply$",                                 "remediation_apply",     None)
+_rule(r"(generate |create )?(a )?(remediation )?fix", "remediation_plan", None)
 _rule(r"(generate |create )?(a )?remediation plan", "remediation_plan",    None)
 _rule(r"preview (remediation|fix(es)?|patch(es)?)", "remediation_preview", None)
 _rule(r"(apply|run) (remediation|fix(es)?|patch(es)?)", "remediation_apply", None)
@@ -73,11 +78,11 @@ _rule(r"^validate$",                              "validate",    None)
 _rule(r"validate (fixes?|patches?|remediation)",  "validate",    None)
 
 # Reports
-_rule(r"(generate |create )?(a )?report",         "report",      None)
 _rule(r"report json",                             "report_json", None)
 _rule(r"report html",                             "report_html", None)
 _rule(r"report pdf",                              "report_pdf",  None)
 _rule(r"export (findings?|report|csv)",           "export",      None)
+_rule(r"(generate |create )?(a )?report",         "report",      None)
 
 # Dashboard
 _rule(r"(open |show )?(the )?dashboard",          "dashboard",   None)

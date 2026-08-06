@@ -22,3 +22,5 @@ backend/.env.txt
 .env.example
 agent_action_log.md
 backend/app/scanner/sast.zip
+.devsecure_cache.json
+*.devsecure_cache.json
