@@ -31,6 +31,11 @@ def watch(
     debounce: float = typer.Option(2.0, "--debounce", help="Seconds to wait before re-scanning"),
 ):
     """Watch a directory and auto-scan on file changes."""
+    if not isinstance(target, str):
+        target = getattr(target, "default", ".")
+        if not isinstance(target, str):
+            target = "."
+
     try:
         from watchdog.observers import Observer
         from watchdog.events import FileSystemEventHandler
@@ -96,6 +101,15 @@ def diff(
     target: str = typer.Option(".", "--target", "-t", help="Working directory"),
 ):
     """Scan only files changed vs a git ref (HEAD, branch, commit)."""
+    if not isinstance(target, str):
+        target = getattr(target, "default", ".")
+        if not isinstance(target, str):
+            target = "."
+
+    if not isinstance(base, str):
+        base = getattr(base, "default", "HEAD")
+        if not isinstance(base, str):
+            base = "HEAD"
     try:
         import git as gitmodule
     except ImportError:

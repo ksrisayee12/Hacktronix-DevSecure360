@@ -32,6 +32,10 @@ app = typer.Typer(help="Security scanning commands")
 def _do_sast_scan(target: str):
     """Run SAST, update session, render results."""
     session = get_session()
+    if not isinstance(target, str):
+        target = getattr(target, "default", ".")
+        if not isinstance(target, str):
+            target = "."
     abs_target = os.path.abspath(target)
 
     if not os.path.exists(abs_target):

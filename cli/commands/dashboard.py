@@ -32,6 +32,11 @@ def dashboard(
     tui: bool = typer.Option(False, "--tui", help="Force TUI mode even if browser is available"),
 ):
     """Open the DevSecure360 web dashboard or show a TUI summary."""
+    if not isinstance(tui, bool):
+        tui = getattr(tui, "default", False)
+        if not isinstance(tui, bool):
+            tui = False
+
     api_ok      = check_api_health()
     session     = get_session()
 

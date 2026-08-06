@@ -25,7 +25,7 @@ from prompt_toolkit.formatted_text import HTML
 
 from cli.theme import (
     console, make_panel, make_success_panel,
-    LOGO, LOGO_SUBTITLE,
+    LOGO, print_logo_banner, LOGO_SUBTITLE,
     PRIMARY_BLUE, PRIMARY_CYAN, SUCCESS_COLOR, WARNING_COLOR, CRITICAL_COLOR, SECONDARY,
     status_icon,
 )
@@ -83,11 +83,7 @@ COMPLETER = WordCompleter(COMPLETIONS, ignore_case=True, match_middle=True)
 
 def _print_logo():
     """Print the ASCII logo and startup sequence."""
-    from rich.text import Text
-
-    console.print()
-    logo_text = Text(LOGO, style=f"bold {PRIMARY_BLUE}")
-    console.print(logo_text)
+    print_logo_banner()
     console.print(f"\n  [bold {PRIMARY_CYAN}]{LOGO_SUBTITLE}[/]")
     console.print()
     console.print(f"  [dim {'─' * 50}]{'─' * 50}[/]")

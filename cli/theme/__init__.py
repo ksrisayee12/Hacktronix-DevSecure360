@@ -12,6 +12,7 @@ from cli.theme.colors import (
     status_icon,
     grade_color,
     LOGO,
+    print_logo_banner,
     LOGO_SUBTITLE,
     PRIMARY_BLUE,
     PRIMARY_CYAN,
