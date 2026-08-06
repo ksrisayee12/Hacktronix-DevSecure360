@@ -98,12 +98,12 @@ def _print_logo():
         ("Workspace Ready",       True),
     ]
 
-    time.sleep(0.1)
+    time.sleep(0.18)
     for label, ok in checks:
         icon  = "✓" if ok else "⚠"
         color = SUCCESS_COLOR if ok else WARNING_COLOR
         console.print(f"  [{color}]{icon}[/{color}]  [white]{label}[/white]")
-        time.sleep(0.12)
+        time.sleep(0.22)
 
     console.print(f"  [dim {'─' * 50}]{'─' * 50}[/]")
     console.print()

@@ -175,14 +175,17 @@ LOGO_360 = [
 
 LOGO = "\n" + "\n".join(d + t for d, t in zip(LOGO_DEVSECURE, LOGO_360))
 
-def print_logo_banner():
-    """Print the dual-color DevSecure360 logo (DEVSECURE in Blue, 360 in Cyan)."""
+def print_logo_banner(animated: bool = True):
+    """Print the dual-color DevSecure360 logo (DEVSECURE in Blue, 360 in Red)."""
+    import time
     console.print()
     for d, t in zip(LOGO_DEVSECURE, LOGO_360):
         text = Text()
         text.append(d, style=f"bold {PRIMARY_BLUE}")
-        text.append(t, style=f"bold {PRIMARY_CYAN}")
+        text.append(t, style=f"bold {CRITICAL_COLOR}")
         console.print(text)
+        if animated:
+            time.sleep(0.06)
 
 LOGO_SUBTITLE = "AI-Powered Application Security  •  Autonomous Security Agent"
 
