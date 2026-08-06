@@ -98,7 +98,7 @@ class DASTEngine:
     OOB_PORT = 4444
 
     def __init__(self):
-        self.http = DASTHTTPClient(timeout=15)
+        self.http = DASTHTTPClient(timeout=8)
         self.oob = OOBListener(host=self.OOB_HOST, port=self.OOB_PORT)
         self._findings: list = []
         self._seen: set = set()   # dedup key: (vuln_class, url, param_name)
@@ -137,10 +137,18 @@ class DASTEngine:
 
             logger.info(f"[DAST] Discovered {len(endpoints)} endpoints")
 
-            # --- Phase 2: Test each endpoint ---
-            for i, endpoint in enumerate(endpoints, 1):
-                logger.info(f"[DAST] Testing endpoint {i}/{len(endpoints)}: {endpoint.method} {endpoint.url}")
-                self._test_endpoint(endpoint, target_url)
+            # --- Phase 2: Test each endpoint concurrently ---
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                futures = []
+                for i, endpoint in enumerate(endpoints, 1):
+                    futures.append(executor.submit(self._test_endpoint, endpoint, target_url, i, len(endpoints)))
+                
+                for future in as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as e:
+                        logger.error(f"[DAST] Endpoint testing failed: {e}")
 
             # --- Phase 3: CORS check on root ---
             self._test_cors(target_url)
@@ -183,7 +191,10 @@ class DASTEngine:
 
     # ── Per-endpoint test dispatcher ──────────────────────────────────────────
 
-    def _test_endpoint(self, endpoint: Endpoint, base_url: str):
+    def _test_endpoint(self, endpoint: Endpoint, base_url: str, index: int = 0, total: int = 0):
+        if index and total:
+            logger.info(f"[DAST] Testing endpoint {index}/{total}: {endpoint.method} {endpoint.url}")
+
         if not endpoint.params:
             # No params — still try SSTI on URL path, SSRF on root
             self._test_ssrf_endpoint(endpoint)
