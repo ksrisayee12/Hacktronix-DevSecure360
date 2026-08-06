@@ -29,23 +29,38 @@ class SPACrawler:
 
     def _check_playwright(self):
         try:
-            from playwright.sync_api import sync_playwright
-            # Also verify the browser binary actually exists
-            with sync_playwright() as p:
-                exe = p.chromium.executable_path
-                import os
-                if not os.path.exists(exe):
-                    raise FileNotFoundError(f"Chromium binary not found at {exe}")
-            self._playwright_available = True
+            import playwright  # noqa — verify package is installed first
         except ImportError:
             if not SPACrawler._warned_once:
                 logger.warning("Playwright not installed — SPA crawling disabled. "
                                "Install with: pip install playwright && python -m playwright install chromium")
                 SPACrawler._warned_once = True
+            return
+
+        # Verify the browser binary exists by running a quick subprocess check.
+        # We CANNOT call sync_playwright() here — uvicorn's asyncio loop is already
+        # running and sync_playwright() will raise "Sync API inside asyncio loop".
+        # A subprocess has its own loop and avoids the conflict entirely.
+        import subprocess, sys
+        check_script = (
+            "from playwright.sync_api import sync_playwright, Error;"
+            "import os; p=sync_playwright().__enter__();"
+            "print(os.path.exists(p.chromium.executable_path));"
+            "p.__exit__(None,None,None)"
+        )
+        try:
+            result = subprocess.run(
+                [sys.executable, "-c", check_script],
+                capture_output=True, text=True, timeout=15
+            )
+            if result.returncode == 0 and result.stdout.strip() == "True":
+                self._playwright_available = True
+            else:
+                raise RuntimeError(result.stderr.strip() or "Browser binary not found")
         except Exception as e:
             if not SPACrawler._warned_once:
-                logger.warning(f"Playwright browser not ready ({e}). "
-                               "Run: python -m playwright install chromium")
+                logger.warning(f"Playwright browser not ready — SPA crawling disabled. "
+                               f"Run: python -m playwright install chromium  (detail: {e})")
                 SPACrawler._warned_once = True
 
     def crawl(self, base_url: str) -> list:
