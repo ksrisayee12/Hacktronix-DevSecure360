@@ -27,7 +27,7 @@ function App() {
         <NavLink to="/" className="flex items-center space-x-3">
           <img src={logo} alt="DevSecure360 Logo" className="h-10 w-auto object-contain" />
           <h1 className="font-bold text-2xl text-[#D2C1B6] tracking-wide whitespace-nowrap">
-            DevSecure<span className="text-[#EF4444]">360</span>
+            DevSecure<span className="text-[#06B6D4]">360</span>
           </h1>
         </NavLink>
 
