@@ -195,6 +195,11 @@ class DASTEngine:
         if index and total:
             logger.info(f"[DAST] Testing endpoint {index}/{total}: {endpoint.method} {endpoint.url}")
 
+        # Skip scanning static assets
+        static_exts = [".png", ".jpg", ".jpeg", ".gif", ".css", ".js", ".woff", ".woff2", ".svg", ".ico"]
+        if any(endpoint.url.lower().split("?")[0].endswith(ext) for ext in static_exts):
+            return
+
         if not endpoint.params:
             # No params — still try SSTI on URL path, SSRF on root
             self._test_ssrf_endpoint(endpoint)
@@ -438,8 +443,7 @@ class DASTEngine:
 
     def _test_ssrf_endpoint(self, endpoint: Endpoint):
         """Test common SSRF-prone URL parameters by name heuristic."""
-        ssrf_param_names = ["url", "redirect", "next", "target", "dest", "destination",
-                            "link", "src", "source", "path", "callback", "return"]
+        ssrf_param_names = ["url", "redirect", "next"]
         for name in ssrf_param_names:
             param = Param(name=name, location="query")
             self._test_ssrf(endpoint, param)
