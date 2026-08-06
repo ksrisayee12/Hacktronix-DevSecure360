@@ -43,10 +43,10 @@ class SPACrawler:
         # A subprocess has its own loop and avoids the conflict entirely.
         import subprocess, sys
         check_script = (
-            "from playwright.sync_api import sync_playwright;"
-            "import os;"
-            "with sync_playwright() as p:"
-            "    print(os.path.exists(p.chromium.executable_path))"
+            "from playwright.sync_api import sync_playwright\n"
+            "import os\n"
+            "with sync_playwright() as p:\n"
+            "    print(os.path.exists(p.chromium.executable_path))\n"
         )
         try:
             result = subprocess.run(
