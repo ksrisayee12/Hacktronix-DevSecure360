@@ -5,6 +5,7 @@ import API_BASE from "../config";
 export default function CodeScan() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [remediating, setRemediating] = useState(false);
   const [result, setResult] = useState(null);
 
   const handleScan = async () => {
@@ -31,6 +32,43 @@ export default function CodeScan() {
     }
   };
 
+  const handleClearVuln = async () => {
+    if (!file || !result || !result.findings || result.findings.length === 0) {
+      alert("No vulnerabilities to clear or missing file.");
+      return;
+    }
+    setRemediating(true);
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("findings_json", JSON.stringify(result.findings));
+    formData.append("target_path", result.target || "");
+
+    try {
+      const res = await axios.post(`${API_BASE}/scan/remediate-bulk`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        responseType: "blob", // We expect a ZIP file back
+      });
+      
+      // Create a URL for the blob and trigger download
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "remediated_code.zip");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      alert("Remediation complete! Downloading patched code ZIP.");
+    } catch (err) {
+      console.error("Remediation error:", err);
+      alert("Remediation failed. Check backend connection or AI setup.");
+    } finally {
+      setRemediating(false);
+    }
+  };
+
   const severityColor = (s) => {
     if (s === "Critical") return "text-purple-400";
     if (s === "High")     return "text-red-400";
@@ -54,9 +92,9 @@ export default function CodeScan() {
           />
           <button
             onClick={handleScan}
-            disabled={loading}
+            disabled={loading || remediating}
             className={`px-6 py-2 rounded-md text-white font-semibold transition ${
-              loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#456882] hover:bg-[#98A1BC]"
+              loading || remediating ? "bg-gray-500 cursor-not-allowed" : "bg-[#456882] hover:bg-[#98A1BC]"
             }`}
           >
             {loading ? "Scanning..." : "Start Scan"}
@@ -68,19 +106,36 @@ export default function CodeScan() {
             <p>🔍 Running security scan... please wait.</p>
           </div>
         )}
+        
+        {remediating && (
+          <div className="text-center text-[#DED3C4] mt-4 animate-pulse">
+            <p>🤖 AI is fixing your code... please wait.</p>
+          </div>
+        )}
 
         {result && (
           <div className="mt-8 overflow-hidden">
             {/* Score bar */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-[#F4EBD3]">Scan Summary</h3>
-              <span className={`px-3 py-1 rounded-full text-white text-sm font-bold ${
-                result.score?.score >= 80 ? "bg-green-600"
-                : result.score?.score >= 60 ? "bg-yellow-500"
-                : "bg-red-600"
-              }`}>
-                Score: {result.score?.score ?? 0} | Grade: {result.score?.grade ?? "N/A"}
-              </span>
+              <div className="flex space-x-4 items-center">
+                {result.findings?.length > 0 && (
+                  <button
+                    onClick={handleClearVuln}
+                    disabled={remediating || loading}
+                    className="px-4 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md font-semibold transition"
+                  >
+                    ✨ Clear Vuln
+                  </button>
+                )}
+                <span className={`px-3 py-1 rounded-full text-white text-sm font-bold ${
+                  result.score?.score >= 80 ? "bg-green-600"
+                  : result.score?.score >= 60 ? "bg-yellow-500"
+                  : "bg-red-600"
+                }`}>
+                  Score: {result.score?.score ?? 0} | Grade: {result.score?.grade ?? "N/A"}
+                </span>
+              </div>
             </div>
 
             {/* Findings table */}

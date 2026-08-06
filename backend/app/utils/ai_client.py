@@ -17,11 +17,11 @@ def generate_completion(prompt: str) -> Optional[str]:
     url = f"{base_url}/api/generate"
     payload = {
         "model": model,
-        "system": "You are an expert security engineer. Your ONLY task is to FIX the vulnerability by rewriting the source code. Return ONLY the complete patched source code inside a markdown block. Do NOT explain anything.",
+        "system": "You are a senior security engineer. Your ONLY task is to FIX the vulnerability by rewriting the source code. YOU MUST MODIFY THE CODE TO REMOVE THE VULNERABILITY. If you return the exact same code, you fail. Return ONLY the complete patched source code inside a markdown block. Do NOT explain anything.",
         "prompt": prompt,
         "stream": False,
         "options": {
-            "temperature": 0.1
+            "temperature": 0.2
         }
     }
 

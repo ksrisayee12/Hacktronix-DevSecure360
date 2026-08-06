@@ -110,7 +110,7 @@ def remediate_finding(request: RemediateRequest):
 
 
 @app.post("/scan/remediate-bulk")
-async def remediate_bulk(
+def remediate_bulk(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     findings_json: str = Form(...),
@@ -120,7 +120,7 @@ async def remediate_bulk(
     try:
         path = os.path.join(tmpdir, file.filename)
         with open(path, "wb") as f:
-            f.write(await file.read())
+            f.write(file.file.read())
 
         if zipfile.is_zipfile(path):
             with zipfile.ZipFile(path, "r") as z:
@@ -135,33 +135,36 @@ async def remediate_bulk(
         findings_data = json.loads(findings_json)
         original_target = target_path
 
-        total_findings = len(findings_data)
-        for i, f_data in enumerate(findings_data):
-            # We don't reconstruct a full Finding object to pass to RemediationEngine because we can construct a dummy one
-            # or we can just instantiate Finding from dict if it matches exactly.
-            # But Finding is a dataclass, so we can unpack. Actually we only need evidence, issue, desc, cwe, remediation, taint_trace for prompt.
-            from app.shared.types import Finding
-            # Some fields like enum might need mapping.
-            # It's easier to use a helper to reconstruct Finding from dict, or pass finding to RemediationEngine
+        # Group findings by file
+        from collections import defaultdict
+        findings_by_file = defaultdict(list)
+        from app.shared.types import Finding
+        
+        for f_data in findings_data:
             finding_obj = Finding(**{k: v for k, v in f_data.items() if k in Finding.__annotations__})
-            
             orig_file_abs = finding_obj.file
-            if not orig_file_abs or not orig_file_abs.startswith(original_target):
-                continue
-                
+            # Normalize paths for Windows case-insensitivity
+            if orig_file_abs and orig_file_abs.lower().startswith(original_target.lower()):
+                findings_by_file[orig_file_abs].append(finding_obj)
+
+        total_files = len(findings_by_file)
+        print(f"[AI Remediation] Total unique files to process: {total_files}", flush=True)
+
+        for i, (orig_file_abs, file_findings) in enumerate(findings_by_file.items()):
             rel_path = os.path.relpath(orig_file_abs, original_target)
             new_file_abs = os.path.join(target, rel_path)
             
             if not os.path.exists(new_file_abs):
                 continue
 
-            print(f"[AI Remediation] Processing {i+1}/{total_findings}: {rel_path} ...")
+            print(f"[AI Remediation] Processing file {i+1}/{total_files}: {rel_path} ({len(file_findings)} findings) ...", flush=True)
 
             with open(new_file_abs, "r", encoding="utf-8") as file_read:
                 file_content = file_read.read()
 
-            fix_snippet = RemediationEngine.generate_fix(finding_obj, file_content)
+            fix_snippet = RemediationEngine.generate_fix(file_findings, file_content)
 
+            print(f"[AI Remediation] LLM Raw Output for {rel_path}:\n", "-"*40, f"\n{fix_snippet}\n", "-"*40, flush=True)
             
             # Extract code from markdown block
             import re
@@ -182,6 +185,8 @@ async def remediate_bulk(
             for root, _, files in os.walk(target):
                 for f in files:
                     file_path = os.path.join(root, f)
+                    if file_path == zip_path:
+                        continue
                     arcname = os.path.relpath(file_path, target)
                     zipf.write(file_path, arcname)
 

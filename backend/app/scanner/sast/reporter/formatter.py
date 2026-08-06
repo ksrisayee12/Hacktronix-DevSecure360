@@ -66,7 +66,13 @@ def taint_finding_to_finding(
 
     severity_str = taint_finding.severity_override if getattr(taint_finding, "severity_override", None) else rule.get("severity", "Medium")
     severity = SEVERITY_MAP.get(severity_str, Severity.MEDIUM)
+    
+    rule_cvss_score = rule.get("cvss_score")
+    rule_cvss_vector = rule.get("cvss_vector")
     cvss = CVSS_MAPPINGS.get(taint_finding.vuln_class, {"score": None, "vector": None})
+    
+    final_cvss_score = float(rule_cvss_score) if rule_cvss_score is not None else cvss["score"]
+    final_cvss_vector = rule_cvss_vector if rule_cvss_vector is not None else cvss["vector"]
 
     confidence = taint_finding.confidence_override if getattr(taint_finding, "confidence_override", None) else rule.get("confidence", "Confirmed")
 
@@ -82,8 +88,8 @@ def taint_finding_to_finding(
         confidence=confidence,
         cwe=rule.get("cwe"),
         owasp=rule.get("owasp"),
-        cvss_score=cvss["score"],
-        cvss_vector=cvss["vector"],
+        cvss_score=final_cvss_score,
+        cvss_vector=final_cvss_vector,
         issue=rule.get("issue", f"{taint_finding.vuln_class} vulnerability detected"),
         description=rule.get("message", ""),
         evidence=evidence,

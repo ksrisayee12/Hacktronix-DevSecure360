@@ -86,14 +86,21 @@ def compute_score(findings: list) -> dict:
         if severity in counts:
             counts[severity] += 1
 
-        # Get CVSS score — try by vuln class first, fall back to severity
-        cvss = CVSS_SCORES.get(vuln_class, SEVERITY_CVSS_FALLBACK.get(severity, 5.0))
-        if cvss > max_cvss:
-            max_cvss = cvss
+        # Get explicit cvss_score from finding if present
+        if isinstance(f, dict):
+            cvss = f.get("cvss_score")
+        else:
+            cvss = getattr(f, "cvss_score", None)
+            
+        if cvss is None:
+            cvss = CVSS_SCORES.get(vuln_class, SEVERITY_CVSS_FALLBACK.get(severity, 5.0))
+            
+        if float(cvss) > max_cvss:
+            max_cvss = float(cvss)
 
-    # Score = 100 minus impact of worst finding
-    # max_cvss 10.0 → score 0 | max_cvss 5.0 → score 50 | max_cvss 0 → score 100
-    raw_score = max(0, 100 - int(max_cvss * 10))
+    # Score = 100 minus cumulative impact of findings
+    deduction = (counts.get("Critical", 0) * 15) + (counts.get("High", 0) * 10) + (counts.get("Medium", 0) * 5) + (counts.get("Low", 0) * 2)
+    raw_score = max(0, 100 - deduction)
 
     # Grade
     if raw_score >= 90:   grade = "A"

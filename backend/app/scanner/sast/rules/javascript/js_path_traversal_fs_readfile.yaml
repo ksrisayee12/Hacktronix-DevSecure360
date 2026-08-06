@@ -1,0 +1,20 @@
+rule_id: js_path_traversal_fs_readfile
+language: javascript
+vuln_class: Path Traversal
+severity: High
+cvss_score: 7.5
+cvss_vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
+issue: Path Traversal via fs.readFile
+message: User input flows into fs.readFile, allowing attackers to read arbitrary files
+  from the server.
+sources:
+- req.query.file
+- req.body.file
+- req.params.file
+- req.query.name
+sinks:
+- fs.readFile(
+- fs.readFileSync(
+sanitizers:
+- path.basename(
+remediation: Validate file paths and enforce strict directory sandboxing.

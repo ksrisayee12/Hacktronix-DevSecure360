@@ -5,7 +5,7 @@ import json
 
 from app.agent.normalizer import normalize_scan_history
 from app.agent.prompt_builder import generate_prompts
-from app.agent.gemini_llm_client import run_agent_on_prompts
+from app.agent.ollama_llm_client import run_agent_on_prompts
 
 
 def run_normalizer(scan_history_path: str, normalized_path: str) -> bool:
@@ -39,11 +39,11 @@ def run_prompt_builder(normalized_path: str, prompts_dir: str) -> bool:
     return True
 
 
-def run_gemini_patcher(prompts_dir: str) -> bool:
-    """Run Gemini LLM client to process prompts and patch files."""
-    print("[3/3] Running Gemini patcher...")
+def run_ollama_patcher(prompts_dir: str) -> bool:
+    """Run Ollama LLM client to process prompts and patch files."""
+    print("[3/3] Running Ollama patcher...")
     run_agent_on_prompts(prompts_dir)
-    print("Gemini patching step completed.")
+    print("Ollama patching step completed.")
     return True
 
 
@@ -64,8 +64,8 @@ def main():
         if not run_prompt_builder(normalized_path, prompts_dir):
             return
 
-        # Step 3: Send prompts to Gemini and patch code files
-        run_gemini_patcher(prompts_dir)
+        # Step 3: Send prompts to Ollama and patch code files
+        run_ollama_patcher(prompts_dir)
 
         print("\nAgent pipeline completed successfully ✅")
     except Exception as e:

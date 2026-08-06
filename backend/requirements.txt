@@ -17,6 +17,7 @@ redis
 rq
 
 # SAST Engine (Phase 1)
+tree-sitter==0.21.3
 tree-sitter>=0.22.3
 tree-sitter-language-pack
 tree-sitter-go

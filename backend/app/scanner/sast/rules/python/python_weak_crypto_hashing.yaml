@@ -1,0 +1,18 @@
+rule_id: python_weak_crypto_hashing
+language: python
+vuln_class: Weak Crypto
+severity: Medium
+cvss_score: 5.9
+cvss_vector: CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N
+issue: Weak Cryptography / Hashing
+message: Use of weak cryptographic primitives like MD5 or treating Base64 as encryption.
+sources:
+- password
+- data
+- input(
+sinks:
+- hashlib.md5(
+- base64.b64encode(
+sanitizers: []
+remediation: Use Argon2, bcrypt, or scrypt for passwords. Base64 is encoding, not
+  encryption.
