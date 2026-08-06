@@ -106,11 +106,14 @@ def status(
     content.append(f"{workspace}\n", style="white")
     content.append(f"  Project       ", style=SECONDARY)
     content.append(f"{cfg.project_name}\n", style="bold white")
-    content.append(f"  Config        ", style=SECONDARY)
     content.append(
-        f"{status_icon(cfg.exists)} {'Found' if cfg.exists else 'Not found (run devsecure init)'}\n",
-        style="white"
+        f"  Config        ", style=SECONDARY
     )
+    config_ok = cfg.exists
+    config_label = "Found" if config_ok else "Not found (run devsecure init)"
+    config_color = SUCCESS_COLOR if config_ok else WARNING_COLOR
+    content.append("+ " if config_ok else "! ", style=f"bold {config_color}")
+    content.append(f"{config_label}\n", style="white")
     content.append(f"\n  ── Recent Scans ──\n", style=f"bold {PRIMARY_CYAN}")
 
     if not history:
@@ -220,21 +223,23 @@ def doctor():
     content.append(f"\n  Components\n",        style=f"bold {PRIMARY_CYAN}")
 
     for name, ok in checks.items():
-        icon = status_icon(ok)
         color = SUCCESS_COLOR if ok else CRITICAL_COLOR
-        content.append(f"  {icon}  {name:<22}", style="white")
-        content.append(f"{'OK' if ok else 'FAIL'}\n", style=f"bold {color}")
+        label = "OK  " if ok else "FAIL"
+        content.append(f"  ", style="white")
+        content.append("+ " if ok else "x ", style=f"bold {color}")
+        content.append(f" {name:<22}", style="white")
+        content.append(f"{label}\n", style=f"bold {color}")
         if not ok:
             all_ok = False
 
     # Recommendations
     if not checks.get("Ollama AI"):
-        content.append(f"\n  ⚠  Ollama is not running.\n", style=f"bold {CRITICAL_COLOR}")
+        content.append(f"\n  ! Ollama is not running.\n", style=f"bold {CRITICAL_COLOR}")
         content.append(f"     AI remediation will be unavailable.\n", style=SECONDARY)
         content.append(f"     Start with: ollama serve\n", style=SECONDARY)
 
     if not all_ok:
-        console.print(make_error_panel(content, title="Doctor — Issues Found"))
+        console.print(make_error_panel(content, title="Doctor -- Issues Found"))
     else:
         content.append(f"\n  All systems operational.\n", style=f"bold {SUCCESS_COLOR}")
-        console.print(make_success_panel(content, title="Doctor — All Clear"))
+        console.print(make_success_panel(content, title="Doctor -- All Clear"))

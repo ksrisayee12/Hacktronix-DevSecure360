@@ -360,8 +360,10 @@ def _build_html_report(findings: list, score: dict, session) -> str:
   </div>
   <div class="counts">
     {"".join(
-        f'<div class="count-item"><div class="count-n" style="color:{sev_colors.get(sev,\"#9CA3AF\")}">{counts.get(sev,0)}</div><div class="count-label">{sev}</div></div>'
-        for sev in ["Critical","High","Medium","Low","Info"]
+        '<div class="count-item"><div class="count-n" style="color:{c}">{n}</div><div class="count-label">{s}</div></div>'.format(
+            c=sev_colors.get(sev, "#9CA3AF"), n=counts.get(sev, 0), s=sev
+        )
+        for sev in ["Critical", "High", "Medium", "Low", "Info"]
     )}
   </div>
   <h2>Findings ({len(findings)} total)</h2>

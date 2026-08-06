@@ -79,6 +79,12 @@ DS_THEME = Theme({
 # CONSOLE (singleton, use this everywhere)
 # ─────────────────────────────────────────────
 
+import sys
+
+# On Windows, force Rich to use the standard stdout with UTF-8 to avoid cp1252 errors
+if sys.platform == "win32":
+    import io
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 console = Console(theme=DS_THEME, highlight=False)
 
 # ─────────────────────────────────────────────
@@ -131,18 +137,18 @@ def make_warning_panel(content, title: str = "Warning") -> Panel:
 # ─────────────────────────────────────────────
 
 def status_icon(ok: bool) -> str:
-    return "[success]✓[/success]" if ok else "[error]✗[/error]"
+    return "[success]+ [/success]" if ok else "[error]x [/error]"
 
 
 def severity_icon(severity: str) -> str:
     icons = {
-        "Critical": "🔴",
-        "High":     "🟠",
-        "Medium":   "🔵",
-        "Low":      "🟢",
-        "Info":     "⚪",
+        "Critical": "CRIT",
+        "High":     "HIGH",
+        "Medium":   "MED ",
+        "Low":      "LOW ",
+        "Info":     "INFO",
     }
-    return icons.get(severity, "•")
+    return icons.get(severity, "?   ")
 
 
 # ─────────────────────────────────────────────
