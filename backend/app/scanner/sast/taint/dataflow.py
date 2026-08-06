@@ -148,12 +148,9 @@ class BlockTransfer:
                 parts = stmt_text.split("=", 1)
                 target_text = parts[0].strip()
                 value_text = parts[1].strip()
-<<<<<<< HEAD
                 if target_text.startswith("let "): target_text = target_text[4:]
                 if target_text.startswith("const "): target_text = target_text[6:]
                 if target_text.startswith("var "): target_text = target_text[4:]
-=======
->>>>>>> hackathon/dhrohit
             else:
                 return
         else:
