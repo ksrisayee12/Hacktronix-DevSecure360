@@ -286,11 +286,25 @@ class HTMLCrawler:
         self._add_endpoint(Endpoint(url=url, method=method, params=params, source="fuzz"))
 
     def _add_endpoint(self, endpoint: Endpoint):
-        """Deduplicate endpoints by URL + method."""
-        # Normalize URL (strip trailing slash)
-        url = endpoint.url.rstrip("/")
-        key = f"{endpoint.method}:{url}"
+        """Deduplicate endpoints by URL + method, merging parameters."""
+        # Normalize URL (strip trailing slash and query/fragment for the key)
+        parsed = urlparse(endpoint.url)
+        base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
+        if not base_url:
+            base_url = endpoint.url.rstrip("/")
+            
+        key = f"{endpoint.method}:{base_url}"
+        
         if key not in self._endpoint_urls_seen:
             self._endpoint_urls_seen.add(key)
-            endpoint.url = url or endpoint.url
+            endpoint.url = base_url  # Store normalized URL
             self.endpoints.append(endpoint)
+        else:
+            # Endpoint already exists, merge any new parameters
+            existing = next((e for e in self.endpoints if f"{e.method}:{e.url}" == key), None)
+            if existing:
+                existing_param_names = {p.name for p in existing.params}
+                for param in endpoint.params:
+                    if param.name not in existing_param_names:
+                        existing.params.append(param)
+                        existing_param_names.add(param.name)
