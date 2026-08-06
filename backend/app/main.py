@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 """
 DevSecure360 — FastAPI Backend
 Phase 0: Clean skeleton. No Bandit, Semgrep, or ZAP. Real engines wired in per phase.
@@ -268,4 +266,3 @@ def _f(f: Finding) -> dict:
         "remediation": f.remediation,
         "tool": f.tool,
     }
->>>>>>> origin/dhrohit
