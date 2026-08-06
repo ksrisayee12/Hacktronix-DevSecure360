@@ -16,6 +16,7 @@ from app.database.history_db import save_scan_result, get_scan_history
 from app.utils.aggregator import compute_score
 
 from app.scanner.sast.engine import SASTEngine
+from app.scanner.dast.engine import DASTEngine
 from app.scanner.remediation_engine import RemediationEngine
 # Phase 3: from app.scanner.port.scanner import PortScanner
 # Phase 4: from app.scanner.secrets.scanner import SecretScanner
@@ -67,12 +68,13 @@ class ExternalScanRequest(BaseModel):
     url: str
 
 @app.post("/scan/external")
-def scan_external(request: ExternalScanRequest):
+async def scan_external(request: ExternalScanRequest):
+    if not request.url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="URL must start with http:// or https://")
     try:
-        # Phase 5: result = DASTEngine().scan(target_url=request.url)
-        result = _stub_result(ScanType.DAST, request.url)
-        save_scan_result("dast", {"findings": result.findings, "score": result.score})
-        return {"scan_id": result.scan_id, "status": result.status, "findings": [_f(f) for f in result.findings], "score": result.score}
+        result = DASTEngine().scan(target_url=request.url)
+        save_scan_result("dast", {"findings": [_f(f) for f in result.findings], "score": result.score})
+        return {"scan_id": result.scan_id, "status": result.status, "findings": [_f(f) for f in result.findings], "score": result.score, "target": result.target}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
