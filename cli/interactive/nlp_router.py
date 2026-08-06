@@ -39,13 +39,14 @@ _rule(r"scan (the )?frontend",                    "scan",        lambda m: "fron
 _rule(r"scan dependencies",                       "deps",        None)
 _rule(r"scan (website|url|site)\s+(https?://\S+)", "dast",       lambda m: m.group(2))
 _rule(r"scan\s+(https?://\S+)",                   "dast",        lambda m: m.group(1))
-_rule(r"^scan$",                                  "scan",        lambda m: ".")
+_rule(r"^(scan|check|analyze|audit)$",            "scan",        lambda m: ".")
 _rule(r"find secrets",                            "secrets",     None)
 _rule(r"scan (for )?secrets",                     "secrets",     None)
 _rule(r"(secure|analyze|audit) (my |the )?app(lication)?", "scan", lambda m: ".")
 _rule(r"full scan",                               "scan",        lambda m: ".")
 
 # Explain / show variants
+_rule(r"^(show|list|view|findings|issues)$",      "explain",     None)
 _rule(r"show (all )?findings?",                   "explain",     None)
 _rule(r"show (all )?critical",                    "explain",     lambda m: "critical")
 _rule(r"show (all )?high",                        "explain",     lambda m: "high")
@@ -60,10 +61,9 @@ _rule(r"explain (.+)",                            "explain",     lambda m: m.gro
 _rule(r"^explain$",                               "explain",     None)
 
 # Remediation variants
-_rule(r"^fix$",                                   "remediation_plan",      None)
-_rule(r"^plan$",                                  "remediation_plan",      None)
+_rule(r"^(fix|plan|ai|remediate|patch)$",         "remediation_plan",      None)
 _rule(r"^preview$",                               "remediation_preview",   None)
-_rule(r"^apply$",                                 "remediation_apply",     None)
+_rule(r"^(apply|save)$",                          "remediation_apply",     None)
 _rule(r"(generate |create )?(a )?(remediation )?fix", "remediation_plan", None)
 _rule(r"(generate |create )?(a )?remediation plan", "remediation_plan",    None)
 _rule(r"preview (remediation|fix(es)?|patch(es)?)", "remediation_preview", None)
