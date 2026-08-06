@@ -41,6 +41,8 @@ class SPACrawler:
         """
         Crawls the base URL using a headless browser.
         Returns list[Endpoint].
+        Runs in a ThreadPoolExecutor so Playwright's sync API doesn't conflict
+        with FastAPI's asyncio event loop.
         """
         if not self._playwright_available:
             logger.info("SPA crawler skipped (Playwright not available). "
@@ -48,7 +50,13 @@ class SPACrawler:
             return []
 
         try:
-            return self._do_crawl(base_url)
+            from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(self._do_crawl, base_url)
+                return future.result(timeout=60)   # 60s hard cap per SPA crawl
+        except FuturesTimeout:
+            logger.warning("SPA crawler timed out after 60s. Continuing with HTML crawler results.")
+            return []
         except Exception as e:
             logger.error(f"SPA crawler failed: {e}. Falling back to HTML crawler only.")
             return []
